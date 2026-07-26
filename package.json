@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "migrate:demo": "node scripts/migrate-demo-bookings.mjs",
+    "test:booking-contract": "node scripts/verify-booking-contract.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

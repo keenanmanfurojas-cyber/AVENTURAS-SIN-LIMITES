@@ -37,6 +37,7 @@ import type {
 
 const receiptTypes = ["image/png", "image/jpeg", "image/webp"];
 const receiptOptimizationThreshold = 3 * 1024 * 1024;
+const maximumReceiptBytes = 5 * 1024 * 1024;
 
 async function optimizeReceipt(file: File) {
   if (file.size <= receiptOptimizationThreshold) return file;
@@ -310,7 +311,16 @@ export function BookingWizard({
       scrollToFirstError();
       return;
     }
-    setReceipt(await optimizeReceipt(file));
+    const optimized = await optimizeReceipt(file);
+    if (optimized.size > maximumReceiptBytes) {
+      setReceipt(null);
+      setErrors({
+        receipt: "El comprobante debe pesar máximo 5 MB.",
+      });
+      scrollToFirstError();
+      return;
+    }
+    setReceipt(optimized);
     setErrors({});
   };
 
@@ -444,8 +454,10 @@ export function BookingWizard({
         <BookingDateSelector
           dates={config.availableDates}
           errors={errors}
+          mode={draft.mode}
           onChange={(selectedDate) => updateDraft({ ...draft, selectedDate })}
           selectedDate={draft.selectedDate}
+          tourSlug={config.tourId}
         />
       );
     }

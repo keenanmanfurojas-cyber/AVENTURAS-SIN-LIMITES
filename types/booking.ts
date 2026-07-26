@@ -79,6 +79,17 @@ export type PaymentProof = {
   type: string;
 };
 
+export type BookingAdminAction = {
+  action: string;
+  actorId: string | null;
+  createdAt: string;
+  id: string;
+  newStatus: BookingStatus;
+  notes: string | null;
+  previousStatus: BookingStatus | null;
+  reason: string | null;
+};
+
 export type AdminAction = {
   action: "approve" | "reject" | "cancel" | "update_notes";
   adminId: string | null;
@@ -116,8 +127,12 @@ export type BookingRecord = {
   createdAt: string;
   updatedAt: string;
   approvedAt: string | null;
+  rejectedAt?: string | null;
   cancelledAt: string | null;
+  cancellationReason?: string | null;
+  pendingHoldUntil?: string | null;
   pricePerPersonCrc: number;
+  adminActions?: BookingAdminAction[];
 };
 
 export type Booking = BookingRecord;
@@ -131,6 +146,30 @@ export type AvailableDate = {
 };
 
 export type TourDate = AvailableDate;
+
+export type PrivateAvailabilityStatus =
+  | "available"
+  | "approved"
+  | "blocked"
+  | "in_review"
+  | "past";
+
+export type PrivateAvailability = {
+  available: boolean;
+  holdUntil: string | null;
+  status: PrivateAvailabilityStatus;
+};
+
+export type GroupTourDate = {
+  availableSpots: number;
+  capacity: number;
+  date: string;
+  id: string;
+  isActive: boolean;
+  startTime: string | null;
+  tourName: string;
+  tourSlug: string;
+};
 
 export type BookingModeOption = {
   description: string;

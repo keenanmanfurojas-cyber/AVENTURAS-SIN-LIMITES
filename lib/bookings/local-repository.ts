@@ -9,6 +9,11 @@ import type {
   BookingStatusUpdate,
 } from "@/lib/bookings/repository";
 import type { BookingRecord } from "@/types/booking";
+import type {
+  GroupTourDate,
+  PrivateAvailability,
+} from "@/types/booking";
+import { getCostaRicaDateString } from "@/lib/timezone";
 
 const dataDirectory = path.join(process.cwd(), ".data", "bookings");
 const proofDirectory = path.join(dataDirectory, "proofs");
@@ -37,6 +42,14 @@ async function writeRecords(records: BookingRecord[]) {
 }
 
 export class LocalBookingRepository implements BookingRepository {
+  constructor() {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "LocalBookingRepository es development-only y no puede usarse en producción.",
+      );
+    }
+  }
+
   async create(record: BookingRecord, proof: File) {
     const records = await readRecords();
     const proofPath = path.join(proofDirectory, record.paymentProof.id);
@@ -48,8 +61,22 @@ export class LocalBookingRepository implements BookingRepository {
     return record;
   }
 
+  async createBooking(record: BookingRecord, proof: File) {
+    return this.create(record, proof);
+  }
+
   async findById(id: string) {
     return (await readRecords()).find((record) => record.id === id) ?? null;
+  }
+
+  async getBookingByCode(code: string) {
+    return (
+      (await readRecords()).find((record) => record.bookingCode === code) ?? null
+    );
+  }
+
+  async getBookingDetails(id: string) {
+    return this.findById(id);
   }
 
   async list(filters: BookingFilters = {}) {
@@ -83,6 +110,10 @@ export class LocalBookingRepository implements BookingRepository {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
+  async listBookings(filters: BookingFilters = {}) {
+    return this.list(filters);
+  }
+
   async readPaymentProof(id: string) {
     const record = await this.findById(id);
     if (!record) return null;
@@ -90,6 +121,10 @@ export class LocalBookingRepository implements BookingRepository {
       path.join(proofDirectory, record.paymentProof.id),
     );
     return { bytes, record };
+  }
+
+  async getPaymentProofUrl() {
+    return null;
   }
 
   async updateStatus(id: string, update: BookingStatusUpdate) {
@@ -113,5 +148,92 @@ export class LocalBookingRepository implements BookingRepository {
     records[index] = updated;
     await writeRecords(records);
     return updated;
+  }
+
+  async approveBooking(id: string, adminNotes?: string) {
+    return this.updateStatus(id, { adminNotes, status: "approved" });
+  }
+
+  async rejectBooking(id: string, reason: string, adminNotes?: string) {
+    return this.updateStatus(id, {
+      adminNotes,
+      reason,
+      status: "rejected",
+    });
+  }
+
+  async cancelBooking(id: string, reason: string, adminNotes?: string) {
+    return this.updateStatus(id, {
+      adminNotes,
+      reason,
+      status: "cancelled",
+    });
+  }
+
+  async getPrivateAvailability(date: string): Promise<PrivateAvailability> {
+    if (date < getCostaRicaDateString()) {
+      return { available: false, holdUntil: null, status: "past" };
+    }
+    const records = await readRecords();
+    const approved = records.some(
+      (record) =>
+        record.mode === "private" &&
+        record.selectedDate === date &&
+        record.status === "approved",
+    );
+    const activeHold = records
+      .filter(
+        (record) =>
+          record.mode === "private" &&
+          record.selectedDate === date &&
+          record.status === "pending_review" &&
+          record.pendingHoldUntil &&
+          Date.parse(record.pendingHoldUntil) > Date.now(),
+      )
+      .sort((a, b) =>
+        (b.pendingHoldUntil ?? "").localeCompare(a.pendingHoldUntil ?? ""),
+      )[0];
+    if (approved) {
+      return { available: false, holdUntil: null, status: "approved" };
+    }
+    if (activeHold) {
+      return {
+        available: false,
+        holdUntil: activeHold.pendingHoldUntil ?? null,
+        status: "in_review",
+      };
+    }
+    return { available: true, holdUntil: null, status: "available" };
+  }
+
+  async getGroupTourDates(): Promise<GroupTourDate[]> {
+    return [];
+  }
+
+  async createTourDate(
+    date: Omit<GroupTourDate, "availableSpots" | "id">,
+  ): Promise<GroupTourDate> {
+    void date;
+    throw new Error("La gestión de fechas requiere Supabase.");
+  }
+
+  async updateTourDate(
+    id: string,
+    date: Partial<Omit<GroupTourDate, "availableSpots" | "id">>,
+  ): Promise<GroupTourDate | null> {
+    void id;
+    void date;
+    throw new Error("La gestión de fechas requiere Supabase.");
+  }
+
+  async blockDate(date: string, reason: string) {
+    void date;
+    void reason;
+    throw new Error("El bloqueo de fechas requiere Supabase.");
+  }
+
+  async unblockDate(date: string) {
+    void date;
+    throw new Error("El bloqueo de fechas requiere Supabase.");
   }
 }

@@ -1,4 +1,14 @@
-import type { AvailableDate, BookingErrors } from "@/types/booking";
+"use client";
+
+import { useEffect, useState } from "react";
+
+import type {
+  AvailableDate,
+  BookingErrors,
+  BookingMode,
+  GroupTourDate,
+  PrivateAvailability,
+} from "@/types/booking";
 
 const statusLabels = {
   available: "Disponible",
@@ -66,15 +76,78 @@ export function formatBookingDate(date: string) {
 export function BookingDateSelector({
   dates,
   errors,
+  mode,
   onChange,
   selectedDate,
+  tourSlug,
 }: Readonly<{
   dates: AvailableDate[];
   errors: BookingErrors;
+  mode: BookingMode | "";
   onChange: (date: string) => void;
   selectedDate: string;
+  tourSlug: string;
 }>) {
-  const orderedDates = [...dates].sort((first, second) => {
+  const [privateAvailability, setPrivateAvailability] =
+    useState<PrivateAvailability | null>(null);
+  const [checkingPrivateDate, setCheckingPrivateDate] = useState(false);
+  const [groupDates, setGroupDates] = useState<AvailableDate[] | null>(null);
+
+  useEffect(() => {
+    if (mode !== "private" || !selectedDate) {
+      setPrivateAvailability(null);
+      return;
+    }
+    const controller = new AbortController();
+    setCheckingPrivateDate(true);
+    fetch(
+      `/api/reservas/disponibilidad?date=${encodeURIComponent(selectedDate)}`,
+      { signal: controller.signal },
+    )
+      .then(async (response) => {
+        const payload = (await response.json()) as {
+          availability?: PrivateAvailability;
+        };
+        setPrivateAvailability(
+          response.ok ? (payload.availability ?? null) : null,
+        );
+      })
+      .catch(() => setPrivateAvailability(null))
+      .finally(() => setCheckingPrivateDate(false));
+    return () => controller.abort();
+  }, [mode, selectedDate]);
+
+  useEffect(() => {
+    if (mode !== "gam_transport") return;
+    const controller = new AbortController();
+    fetch(
+      `/api/reservas/disponibilidad?tourSlug=${encodeURIComponent(tourSlug)}`,
+      { signal: controller.signal },
+    )
+      .then(async (response) => {
+        const payload = (await response.json()) as { dates?: GroupTourDate[] };
+        if (!response.ok || !payload.dates?.length) return;
+        setGroupDates(
+          payload.dates.map((date) => ({
+            availableSpots: date.availableSpots,
+            capacity: date.capacity,
+            date: date.date,
+            status:
+              date.availableSpots === 0
+                ? "sold_out"
+                : date.availableSpots <= Math.max(2, date.capacity * 0.2)
+                  ? "low"
+                  : "available",
+            temporary: false,
+          })),
+        );
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [mode, tourSlug]);
+
+  const displayedDates = groupDates ?? dates;
+  const orderedDates = [...displayedDates].sort((first, second) => {
     const firstSoldOut =
       first.status === "sold_out" || first.availableSpots === 0;
     const secondSoldOut =
@@ -92,9 +165,56 @@ export function BookingDateSelector({
         ¿Cuándo quieres vivir la experiencia?
       </h3>
       <p className="mt-3 text-sm leading-7 text-stone-400">
-        Elige una de las fechas habilitadas para Ciudad Esmeralda.
+        {mode === "private"
+          ? "Selecciona cualquier fecha futura. Confirmaremos la disponibilidad antes de crear la solicitud."
+          : "Elige una de las fechas habilitadas para Ciudad Esmeralda."}
       </p>
-      {dates.some((date) => date.temporary) ? (
+      {mode === "private" ? (
+        <div
+          className="mt-7 rounded-[1.6rem] border border-white/10 bg-white/[0.025] p-5"
+          data-error={Boolean(errors.selectedDate)}
+        >
+          <label
+            className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#b9ff4a]"
+            htmlFor="private-tour-date"
+          >
+            Fecha privada
+          </label>
+          <input
+            className="mt-3 min-h-12 w-full rounded-full border border-white/10 bg-black/25 px-5 text-white"
+            id="private-tour-date"
+            onChange={(event) => onChange(event.target.value)}
+            type="date"
+            value={selectedDate}
+          />
+          {checkingPrivateDate ? (
+            <p className="mt-3 text-xs text-stone-500">
+              Consultando disponibilidad…
+            </p>
+          ) : privateAvailability ? (
+            <p
+              className={`mt-3 text-xs ${
+                privateAvailability.available
+                  ? "text-[#b9ff4a]"
+                  : "text-amber-300"
+              }`}
+            >
+              {privateAvailability.available
+                ? "Disponible para enviar solicitud."
+                : privateAvailability.status === "in_review"
+                  ? "En revisión temporal."
+                  : "Fecha no disponible."}
+            </p>
+          ) : null}
+          {errors.selectedDate ? (
+            <p className="mt-4 text-sm font-medium text-red-400">
+              {errors.selectedDate}
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <>
+      {displayedDates.some((date) => date.temporary) ? (
         <p className="mt-4 rounded-full border border-amber-300/20 bg-amber-300/[0.06] px-4 py-2 text-xs text-amber-200">
           Fechas temporales de demostración; serán reemplazadas por las fechas reales.
         </p>
@@ -183,6 +303,8 @@ export function BookingDateSelector({
       {errors.selectedDate ? (
         <p className="mt-4 text-sm font-medium text-red-400">{errors.selectedDate}</p>
       ) : null}
+        </>
+      )}
     </div>
   );
 }

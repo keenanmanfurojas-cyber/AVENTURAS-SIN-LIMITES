@@ -11,7 +11,11 @@ function getSecret() {
 }
 
 export function adminAuthIsConfigured() {
-  return Boolean(process.env.ADMIN_PASSWORD && getSecret().length >= 32);
+  return Boolean(
+    process.env.NODE_ENV !== "production" &&
+      process.env.ADMIN_PASSWORD &&
+      getSecret().length >= 32,
+  );
 }
 
 function sign(payload: string) {

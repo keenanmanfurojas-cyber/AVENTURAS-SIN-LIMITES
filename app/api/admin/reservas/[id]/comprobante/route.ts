@@ -1,5 +1,6 @@
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { bookingRepository } from "@/lib/bookings";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
@@ -10,6 +11,10 @@ export async function GET(
   if (!(await isAdminAuthenticated())) {
     return new Response("No autorizado", { status: 401 });
   }
+  const signedUrl = await bookingRepository.getPaymentProofUrl((await params).id);
+  if (signedUrl) return NextResponse.redirect(signedUrl);
+
+  // Fallback development-only para LocalBookingRepository.
   const proof = await bookingRepository.readPaymentProof((await params).id);
   if (!proof) return new Response("No encontrado", { status: 404 });
   return new Response(new Uint8Array(proof.bytes), {

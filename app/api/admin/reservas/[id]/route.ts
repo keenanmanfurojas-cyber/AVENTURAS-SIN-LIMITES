@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { bookingRepository } from "@/lib/bookings";
+import {
+  BookingRepositoryError,
+  safeBookingErrorMessage,
+} from "@/lib/bookings/errors";
 import type { BookingStatus } from "@/types/booking";
 
 const allowedStatuses = new Set<BookingStatus>([
@@ -49,12 +53,27 @@ export async function PATCH(
       { status: 409 },
     );
   }
-  const record = await bookingRepository.updateStatus(id, {
-    adminNotes,
-    reason,
-    status,
-  });
-  return record
-    ? NextResponse.json({ record })
-    : NextResponse.json({ error: "Reserva no encontrada." }, { status: 404 });
+  try {
+    const record = await bookingRepository.updateStatus(id, {
+      adminNotes,
+      reason,
+      status,
+    });
+    return record
+      ? NextResponse.json({ record })
+      : NextResponse.json({ error: "Reserva no encontrada." }, { status: 404 });
+  } catch (error) {
+    const conflict =
+      error instanceof BookingRepositoryError &&
+      [
+        "date_blocked",
+        "group_capacity_exceeded",
+        "group_date_unavailable",
+        "private_date_unavailable",
+      ].includes(error.code);
+    return NextResponse.json(
+      { error: safeBookingErrorMessage(error) },
+      { status: conflict ? 409 : 500 },
+    );
+  }
 }

@@ -127,11 +127,18 @@ export function validateBookingStep(
     const selected = config.availableDates.find(
       (item) => item.date === draft.selectedDate,
     );
-    if (!selected) {
+    if (
+      draft.mode === "private" &&
+      !/^\d{4}-\d{2}-\d{2}$/.test(draft.selectedDate)
+    ) {
+      errors.selectedDate = "Selecciona una fecha disponible para continuar.";
+    } else if (draft.mode !== "private" && !selected) {
       errors.selectedDate = "Selecciona una fecha disponible para continuar.";
     } else if (
-      selected.status === "sold_out" ||
-      selected.availableSpots < draft.participantCount
+      draft.mode !== "private" &&
+      selected &&
+      (selected.status === "sold_out" ||
+        selected.availableSpots < draft.participantCount)
     ) {
       errors.selectedDate = "Esta fecha no tiene cupos suficientes.";
     }

@@ -112,12 +112,9 @@ create table public.blocked_dates (
   reason text not null,
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  unique (date)
 );
-
-create unique index blocked_dates_one_active_per_date_idx
-  on public.blocked_dates (date)
-  where is_active;
 
 create table public.calendar_syncs (
   id uuid primary key default gen_random_uuid(),
@@ -246,6 +243,13 @@ begin
       raise exception using errcode = 'P0001', message = 'GROUP_CAPACITY_EXCEEDED';
     end if;
   end if;
+
+  perform pg_advisory_xact_lock(
+    hashtextextended(
+      lower(payload->'buyer'->>'email') || ':' || (payload->'buyer'->>'phone'),
+      1
+    )
+  );
 
   select id into new_buyer_id
   from public.buyers
@@ -446,11 +450,7 @@ begin
   update public.bookings
   set
     status = target_status,
-    pending_hold_until =
-      case when target_status = 'approved'
-        then pending_hold_until
-        else null
-      end,
+    pending_hold_until = null,
     approved_at = case when target_status = 'approved' then now() else approved_at end,
     rejected_at = case when target_status = 'rejected' then now() else rejected_at end,
     cancelled_at = case when target_status = 'cancelled' then now() else cancelled_at end,

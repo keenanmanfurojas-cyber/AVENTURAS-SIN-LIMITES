@@ -1,0 +1,37 @@
+import { NextResponse } from "next/server";
+
+import { bookingRepository } from "@/lib/bookings";
+import { safeBookingErrorMessage } from "@/lib/bookings/errors";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(request: Request) {
+  const params = new URL(request.url).searchParams;
+  const date = params.get("date");
+  const tourSlug = params.get("tourSlug");
+
+  try {
+    if (date) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return NextResponse.json({ error: "Fecha no válida." }, { status: 400 });
+      }
+      return NextResponse.json({
+        availability: await bookingRepository.getPrivateAvailability(date),
+      });
+    }
+    if (tourSlug) {
+      return NextResponse.json({
+        dates: await bookingRepository.getGroupTourDates(tourSlug),
+      });
+    }
+    return NextResponse.json(
+      { error: "Indica una fecha o un tour." },
+      { status: 400 },
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: safeBookingErrorMessage(error) },
+      { status: 503 },
+    );
+  }
+}

@@ -11,7 +11,12 @@ export async function POST(request: Request) {
   const { password } = (await request.json()) as { password?: string };
   if (!adminAuthIsConfigured()) {
     return NextResponse.json(
-      { error: "Configura ADMIN_PASSWORD y ADMIN_SESSION_SECRET en .env.local." },
+      {
+        error:
+          process.env.NODE_ENV === "production"
+            ? "El acceso administrativo de producción se habilitará con autenticación real en la Etapa 3."
+            : "Configura ADMIN_PASSWORD y ADMIN_SESSION_SECRET en .env.local.",
+      },
       { status: 503 },
     );
   }

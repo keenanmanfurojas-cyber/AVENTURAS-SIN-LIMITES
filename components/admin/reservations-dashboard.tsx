@@ -200,7 +200,7 @@ export function ReservationsDashboard({
                     <div><dt className="text-stone-600">WhatsApp</dt><dd>{record.buyer.phone}</dd></div>
                     <div><dt className="text-stone-600">Punto de salida</dt><dd>{record.transportDetails.gam_transport.departurePoint || record.transportDetails.private.pickupZone || "No aplica"}</dd></div>
                     <div><dt className="text-stone-600">Titular SINPE</dt><dd>{record.sinpeAccountHolder} · {record.sinpeAccountNumber}</dd></div>
-                    <div><dt className="text-stone-600">Motivo / notas</dt><dd>{record.rejectionReason || "—"} {record.adminNotes || ""}</dd></div>
+                    <div><dt className="text-stone-600">Motivo / notas</dt><dd>{record.rejectionReason || record.cancellationReason || "—"} {record.adminNotes || ""}</dd></div>
                   </dl>
                   <div>
                     <h3 className="font-bold text-white">Participantes</h3>
@@ -215,6 +215,29 @@ export function ReservationsDashboard({
                       ))}
                     </div>
                     <p className="mt-4 text-stone-400">Restricciones alimentarias: {record.foodDetails.hasDietaryRestriction === "yes" ? record.foodDetails.dietaryDetails : "No reporta"}</p>
+                    {record.adminActions?.length ? (
+                      <div className="mt-5">
+                        <h3 className="font-bold text-white">
+                          Historial de estados
+                        </h3>
+                        <ol className="mt-3 space-y-2">
+                          {[...record.adminActions]
+                            .sort((first, second) =>
+                              first.createdAt.localeCompare(second.createdAt),
+                            )
+                            .map((action) => (
+                              <li
+                                className="rounded-xl border border-white/10 bg-black/15 p-3 text-xs text-stone-400"
+                                key={action.id}
+                              >
+                                {bookingStatusLabels[action.newStatus]} ·{" "}
+                                {formatCreatedAt(action.createdAt)}
+                                {action.reason ? ` · ${action.reason}` : ""}
+                              </li>
+                            ))}
+                        </ol>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
                 <div className="mt-5 flex flex-wrap gap-2">

@@ -7,31 +7,23 @@ import {
   getBookingTotal,
 } from "@/lib/booking-utils";
 import { bookingRepository } from "@/lib/bookings";
-import type { BookingDraft, BookingRecord } from "@/types/booking";
+import {
+  safeBookingErrorMessage,
+} from "@/lib/bookings/errors";
+import {
+  bookingDraftSchema,
+  paymentProofIsValid,
+} from "@/lib/bookings/validation";
+import type { BookingRecord } from "@/types/booking";
 
 export const runtime = "nodejs";
 
-const acceptedProofTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
-
-function isCompleteDraft(draft: BookingDraft) {
-  return Boolean(
-    draft.mode &&
-      draft.selectedDate &&
-      draft.buyer.fullName.trim() &&
-      draft.buyer.email.trim() &&
-      draft.buyer.phone.trim() &&
-      draft.termsAccepted &&
-      draft.participants.length === draft.participantCount &&
-      draft.participants.every(
-        (participant) =>
-          participant.fullName.trim() &&
-          participant.phone.trim() &&
-          participant.hasMedicalCondition &&
-          participant.fitness.trim() &&
-          (participant.hasMedicalCondition !== "yes" ||
-            participant.medicalDetails.trim()),
-      ),
+function getHoldHours() {
+  const parsed = Number.parseInt(
+    process.env.PRIVATE_BOOKING_HOLD_HOURS ?? "24",
+    10,
   );
+  return Number.isFinite(parsed) && parsed > 0 && parsed <= 168 ? parsed : 24;
 }
 
 export async function POST(request: Request) {
@@ -42,27 +34,32 @@ export async function POST(request: Request) {
     if (!(proof instanceof File) || typeof rawDraft !== "string") {
       return NextResponse.json({ error: "Solicitud incompleta." }, { status: 400 });
     }
-    if (!acceptedProofTypes.has(proof.type) || proof.size === 0) {
+    if (!(await paymentProofIsValid(proof))) {
       return NextResponse.json(
-        { error: "El comprobante no tiene un formato válido." },
+        {
+          error:
+            "El comprobante debe ser PNG, JPG, JPEG o WEBP y pesar máximo 5 MB.",
+        },
         { status: 400 },
       );
     }
-    const draft = JSON.parse(rawDraft) as BookingDraft;
-    const date = config.availableDates.find(
-      (available) => available.date === draft.selectedDate,
-    );
-    if (
-      !isCompleteDraft(draft) ||
-      !date ||
-      date.status === "sold_out" ||
-      date.availableSpots < draft.participantCount
-    ) {
+    let draftInput: unknown;
+    try {
+      draftInput = JSON.parse(rawDraft);
+    } catch {
       return NextResponse.json(
-        { error: "Revisa la fecha, los cupos y los datos obligatorios." },
+        { error: "La solicitud no tiene un formato válido." },
         { status: 400 },
       );
     }
+    const parsedDraft = bookingDraftSchema.safeParse(draftInput);
+    if (!parsedDraft.success) {
+      return NextResponse.json(
+        { error: "Revisa los datos obligatorios de la solicitud." },
+        { status: 400 },
+      );
+    }
+    const draft = parsedDraft.data;
     const mode = config.modes.find((option) => option.id === draft.mode);
     const total = getBookingTotal(config, draft);
     const price = getBookingPricePerPerson(config, draft);
@@ -70,6 +67,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Modalidad no válida." }, { status: 400 });
     }
     const now = new Date().toISOString();
+    const pendingHoldUntil = new Date(
+      Date.now() + getHoldHours() * 60 * 60 * 1000,
+    ).toISOString();
     const record: BookingRecord = {
       id: crypto.randomUUID(),
       bookingCode: generateReservationCode(),
@@ -106,16 +106,17 @@ export async function POST(request: Request) {
       updatedAt: now,
       approvedAt: null,
       cancelledAt: null,
+      pendingHoldUntil,
       pricePerPersonCrc: price,
     };
     return NextResponse.json(
       { reservation: await bookingRepository.create(record, proof) },
       { status: 201 },
     );
-  } catch {
+  } catch (error) {
     return NextResponse.json(
-      { error: "No fue posible guardar la solicitud." },
-      { status: 500 },
+      { error: safeBookingErrorMessage(error) },
+      { status: 503 },
     );
   }
 }
