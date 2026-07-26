@@ -117,7 +117,7 @@ export function SiteHeader() {
           <Link
             aria-label={`${siteConfig.name} — Inicio`}
             className="group flex items-center rounded-full"
-            href="/#inicio"
+            href="/"
             onClick={() => closeMenu()}
           >
             <BrandWatermark
@@ -158,7 +158,7 @@ export function SiteHeader() {
               aria-controls="mobile-navigation"
               aria-expanded={isMenuOpen}
               aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
-              className="relative grid size-11 place-items-center rounded-full border border-white/15 bg-white/[0.035] text-smoke transition hover:border-ember/50 hover:bg-lava/10 xl:hidden"
+              className="relative grid size-11 place-items-center rounded-full border border-[#b9ff4a]/35 bg-[#b9ff4a]/10 text-smoke transition hover:border-[#b9ff4a]/70 hover:bg-[#b9ff4a]/15 xl:hidden"
               onClick={() => setIsMenuOpen((current) => !current)}
               ref={menuButtonRef}
               type="button"
@@ -212,7 +212,7 @@ export function SiteHeader() {
               className="w-[min(44vw,13rem)]"
               sizes="208px"
             />
-            <p className="shrink-0 text-right text-[0.46rem] font-semibold uppercase leading-4 tracking-[0.18em] text-ember">
+            <p className="shrink-0 font-[family-name:var(--font-poppins)] text-right text-[0.46rem] font-semibold uppercase leading-4 tracking-[0.18em] text-[#b9ff4a]">
               {siteConfig.brandLine}
             </p>
           </div>
@@ -222,12 +222,12 @@ export function SiteHeader() {
               {navigationItems.map((item, index) => (
                 <li className="border-b border-white/10" key={item.href}>
                   <Link
-                    className="group flex min-h-14 items-center justify-between py-3 font-display text-[clamp(1.55rem,7vw,2.15rem)] leading-none text-stone-200 transition-colors hover:text-ember"
+                    className="group flex min-h-14 items-center justify-between py-3 font-[family-name:var(--font-poppins)] text-[clamp(1.3rem,6vw,1.85rem)] font-medium leading-tight tracking-[-0.025em] text-stone-200 transition-colors hover:text-[#b9ff4a]"
                     href={item.href}
                     onClick={() => closeMenu()}
                   >
                     {item.label}
-                    <span className="font-sans text-[0.5rem] tracking-widest text-rock transition-colors group-hover:text-ember">
+                    <span className="font-[family-name:var(--font-poppins)] text-[0.5rem] tracking-widest text-stone-400 transition-colors group-hover:text-[#b9ff4a]">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                   </Link>
@@ -238,7 +238,7 @@ export function SiteHeader() {
 
           <div className="mt-auto grid gap-3 pt-6 sm:grid-cols-2">
             <a
-              className="flex min-h-12 items-center justify-center gap-3 rounded-full bg-lava px-5 text-[0.58rem] font-bold uppercase tracking-[0.2em] text-white shadow-lava"
+              className="flex min-h-12 items-center justify-center gap-3 rounded-full bg-[#b9ff4a] px-5 font-[family-name:var(--font-poppins)] text-[0.58rem] font-bold uppercase tracking-[0.2em] text-black shadow-[0_12px_36px_rgba(185,255,74,0.16)] transition-colors hover:bg-[#cbff7a]"
               href={siteConfig.contact.whatsapp.href}
               onClick={() => closeMenu()}
               rel="noopener noreferrer"
@@ -248,7 +248,7 @@ export function SiteHeader() {
               Reservar por WhatsApp
             </a>
             <a
-              className="flex min-h-12 items-center justify-center gap-3 rounded-full border border-white/15 bg-white/[0.035] px-5 text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-ash"
+              className="flex min-h-12 items-center justify-center gap-3 rounded-full border border-white/15 bg-white/[0.035] px-5 font-[family-name:var(--font-poppins)] text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-ash"
               href={siteConfig.contact.email.href}
               onClick={() => closeMenu()}
             >

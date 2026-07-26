@@ -28,3 +28,6 @@ next-env.d.ts
 # Private source material
 /MATERIAL/
 .vercel
+
+# Datos privados del repositorio local de demostración
+/.data/

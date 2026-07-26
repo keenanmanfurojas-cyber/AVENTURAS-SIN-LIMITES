@@ -17,7 +17,7 @@ export function TourList({
         <li className="flex gap-4" key={item}>
           <span
             aria-hidden="true"
-            className="mt-[0.72rem] size-1 shrink-0 rotate-45 bg-sand"
+            className="mt-[0.7rem] size-1.5 shrink-0 rotate-45 rounded-[1px] bg-[#b9ff4a] shadow-[0_0_10px_rgba(185,255,74,0.3)]"
           />
           <span>{item}</span>
         </li>

@@ -16,7 +16,6 @@ type WelcomeExperienceProps = Readonly<{
 export function WelcomeExperience({ children }: WelcomeExperienceProps) {
   const {
     destinationRef,
-    enterExperience,
     hasMounted,
     phase,
     prefersReducedMotion,
@@ -74,8 +73,7 @@ export function WelcomeExperience({ children }: WelcomeExperienceProps) {
               <div className="intro-cta-stage mt-12 flex justify-center">
                 <ExploreButton
                   ariaLabel="Saltar la introducción y explorar Aventuras Sin Límites"
-                  disabled={isDeparting || hasEntered}
-                  onClick={() => enterExperience(true)}
+                  href="/explorar"
                 />
               </div>
             </div>

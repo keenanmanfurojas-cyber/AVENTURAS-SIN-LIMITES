@@ -1,7 +1,6 @@
 import { SiteFooter } from "@/components/navigation/site-footer";
 import { SiteHeader } from "@/components/navigation/site-header";
-import { BenefitsSection } from "@/sections/home/benefits-section";
-import { BrandExperienceSection } from "@/sections/home/brand-experience-section";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { ContactSection } from "@/sections/home/contact-section";
 import { FaqSection } from "@/sections/home/faq-section";
 import { FeaturedToursSection } from "@/sections/home/featured-tours-section";
@@ -14,13 +13,21 @@ export function HomePageContent() {
     <>
       <SiteHeader />
       <HomeHeroSection />
-      <FeaturedToursSection />
-      <BenefitsSection />
-      <BrandExperienceSection />
-      <GallerySection />
-      <TestimonialsSection />
-      <FaqSection />
-      <ContactSection />
+      <ScrollReveal timing="prompt">
+        <FeaturedToursSection />
+      </ScrollReveal>
+      <ScrollReveal>
+        <GallerySection />
+      </ScrollReveal>
+      <ScrollReveal>
+        <TestimonialsSection />
+      </ScrollReveal>
+      <ScrollReveal>
+        <FaqSection />
+      </ScrollReveal>
+      <ScrollReveal>
+        <ContactSection />
+      </ScrollReveal>
       <SiteFooter />
     </>
   );

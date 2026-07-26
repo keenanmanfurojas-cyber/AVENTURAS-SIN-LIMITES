@@ -1,6 +1,6 @@
 export type NavigationItem = {
   label: string;
-  href: `/#${string}`;
+  href: "/" | `/explorar#${string}`;
 };
 
 export type TourOfficialDate = {
@@ -20,7 +20,7 @@ export type Tour = {
   name: string;
   category: string;
   modality: string;
-  modalityLabel: "Con transporte" | "Sin transporte";
+  modalityLabel: "Con transporte" | "Sin transporte" | "Paquete internacional";
   location: string;
   meetingPoint: string | null;
   mapsQuery: string | null;
@@ -34,6 +34,7 @@ export type Tour = {
   difficulty: string;
   priceCrc: number;
   priceUsd: number | null;
+  installmentPriceUsd?: number | null;
   reservationAmountCrc: number;
   mainImage: string;
   imageAlt: string;
@@ -56,12 +57,6 @@ export type Tour = {
   temporaryImage: boolean;
 };
 
-export type Benefit = {
-  icon: IconName;
-  title: string;
-  description: string;
-};
-
 export type GalleryImage = {
   src: string;
   alt: string;
@@ -73,6 +68,8 @@ export type Testimonial = {
   quote: string;
   author: string;
   context: string;
+  rating: number;
+  satisfaction: number;
   isDemo: true;
 };
 

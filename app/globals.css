@@ -7,16 +7,16 @@
   --color-volcanic: #070606;
   --color-obsidian: #070606;
   --color-charcoal: #161112;
-  --color-lava: #e4452f;
-  --color-molten: #ff5a36;
-  --color-ember: #ff9a4f;
+  --color-lava: #b9ff4a;
+  --color-molten: #cbff7a;
+  --color-ember: #d8ff9d;
   --color-smoke: #f4f0eb;
   --color-ash: #aaa19d;
   --color-rock: #716966;
   --color-glass: rgba(22, 17, 18, 0.62);
   --color-glass-strong: rgba(13, 10, 11, 0.82);
   --color-border: rgba(244, 240, 235, 0.12);
-  --color-border-bright: rgba(255, 154, 79, 0.34);
+  --color-border-bright: rgba(185, 255, 74, 0.3);
   --color-success: #55b982;
   --color-warning: #f2a84b;
   --color-danger: #ef5b5b;
@@ -31,7 +31,7 @@
   --radius-md: 0.75rem;
   --radius-lg: 1.25rem;
   --shadow-glass: 0 24px 80px rgba(0, 0, 0, 0.34);
-  --shadow-lava: 0 0 42px rgba(228, 69, 47, 0.22);
+  --shadow-lava: 0 0 42px rgba(185, 255, 74, 0.14);
   --blur-glass: 18px;
   --z-nav: 40;
   --z-overlay: 20;
@@ -45,7 +45,7 @@
     rgba(7, 6, 6, 0.9)
   );
 
-  /* Alias heredados: evitan roturas mientras la UI migra por fases. */
+  /* Alias heredados: mantienen consistencia durante la migración visual. */
   --color-forest: var(--color-charcoal);
   --color-moss: var(--color-lava);
   --color-sand: var(--color-ember);
@@ -93,7 +93,7 @@ textarea {
 }
 
 :where(button, a, input, select, textarea):focus-visible {
-  outline: 2px solid var(--color-ember);
+  outline: 2px solid #b9ff4a;
   outline-offset: 5px;
 }
 
@@ -108,19 +108,58 @@ button:disabled,
 }
 
 ::selection {
-  background: rgba(228, 69, 47, 0.42);
+  background: rgba(185, 255, 74, 0.3);
   color: var(--color-smoke);
 }
 
 .surface-grid {
   background-image:
-    linear-gradient(rgba(255, 154, 79, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 154, 79, 0.035) 1px, transparent 1px);
+    linear-gradient(rgba(185, 255, 74, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(185, 255, 74, 0.025) 1px, transparent 1px);
   background-size: 80px 80px;
 }
 
 .text-balance {
   text-wrap: balance;
+}
+
+.booking-availability-bar {
+  animation: reveal-availability 900ms var(--ease-refined) both;
+  width: var(--availability-width);
+}
+
+@keyframes reveal-availability {
+  from {
+    opacity: 0;
+    width: 0;
+  }
+
+  to {
+    opacity: 1;
+    width: var(--availability-width);
+  }
+}
+
+.hero-scroll-indicator {
+  animation: hero-scroll-hint 1.8s ease-in-out infinite;
+}
+
+@keyframes hero-scroll-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(0.35rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .booking-availability-bar,
+  .hero-scroll-indicator {
+    animation: none;
+  }
 }
 
 .type-display {
@@ -198,7 +237,7 @@ button:disabled,
   border: 1px solid transparent;
   background:
     linear-gradient(var(--color-charcoal), var(--color-charcoal)) padding-box,
-    linear-gradient(120deg, rgba(255, 154, 79, 0.5), rgba(228, 69, 47, 0.08))
+    linear-gradient(120deg, rgba(185, 255, 74, 0.42), rgba(185, 255, 74, 0.04))
       border-box;
 }
 
@@ -224,8 +263,8 @@ button:disabled,
 
 .volcanic-background {
   background:
-    radial-gradient(circle at 75% 12%, rgba(228, 69, 47, 0.08), transparent 28rem),
-    radial-gradient(circle at 8% 60%, rgba(255, 90, 54, 0.04), transparent 32rem),
+    radial-gradient(circle at 75% 12%, rgba(185, 255, 74, 0.06), transparent 28rem),
+    radial-gradient(circle at 8% 60%, rgba(185, 255, 74, 0.025), transparent 32rem),
     var(--color-volcanic);
   isolation: isolate;
   min-height: 100%;
@@ -339,7 +378,7 @@ button:disabled,
     linear-gradient(
       110deg,
       rgba(255, 255, 255, 0.025) 20%,
-      rgba(255, 154, 79, 0.09) 38%,
+      rgba(185, 255, 74, 0.075) 38%,
       rgba(255, 255, 255, 0.025) 56%
     ),
     var(--color-charcoal);
@@ -455,7 +494,7 @@ button:disabled,
 }
 
 .nav-link::after {
-  background: linear-gradient(90deg, transparent, var(--color-ember), transparent);
+  background: linear-gradient(90deg, transparent, #b9ff4a, transparent);
   bottom: 0.35rem;
   content: "";
   height: 1px;
@@ -474,7 +513,351 @@ button:disabled,
 
 .hero-primary-media {
   filter: saturate(0.88) contrast(1.04) brightness(0.88);
+  object-position: 58% center;
   transform: scale(1.015);
+}
+
+.section-transition {
+  isolation: isolate;
+}
+
+.scroll-reveal[data-reveal-ready="true"] {
+  background: #080a08;
+  border-radius: 2.5rem;
+  filter: blur(14px);
+  opacity: 0;
+  overflow: hidden;
+  position: relative;
+  transform: translateY(140px) scale(0.72);
+  transition:
+    border-radius 1350ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 1350ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 1350ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-reveal[data-reveal-ready="true"]::before {
+  background: radial-gradient(
+    circle at center,
+    rgba(185, 255, 74, 0.12),
+    rgba(185, 255, 74, 0.025) 42%,
+    transparent 72%
+  );
+  border-radius: 50%;
+  content: "";
+  inset: 12% 8%;
+  opacity: 1;
+  pointer-events: none;
+  position: absolute;
+  transform: scale(0.42);
+  transition:
+    opacity 1350ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1350ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+}
+
+.scroll-reveal[data-reveal-ready="true"] > section {
+  background-color: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.scroll-reveal[data-revealed="true"] {
+  border-radius: 0;
+  filter: blur(0);
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.scroll-reveal[data-revealed="true"]::before {
+  opacity: 0;
+  transform: scale(1.45);
+}
+
+.scroll-reveal--prompt[data-reveal-ready="true"] {
+  border-radius: 1.5rem;
+  filter: blur(5px);
+  transform: translateY(72px) scale(0.92);
+  transition-duration: 800ms;
+}
+
+.scroll-reveal--prompt[data-reveal-ready="true"]::before {
+  transition-duration: 800ms;
+}
+
+.scroll-reveal--prompt[data-revealed="true"] {
+  border-radius: 0;
+  filter: blur(0);
+  transform: translateY(0) scale(1);
+}
+
+.in-view-reveal[data-reveal-ready="true"] {
+  filter: blur(5px);
+  opacity: 0;
+  transform: translate3d(0, 38px, 0) scale(0.985);
+  transition:
+    filter 760ms var(--ease-refined),
+    opacity 760ms var(--ease-refined),
+    transform 760ms var(--ease-refined);
+  will-change: filter, opacity, transform;
+}
+
+.in-view-reveal[data-revealed="true"] {
+  filter: blur(0);
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.testimonials-marquee {
+  overflow: hidden;
+}
+
+.testimonials-marquee-track {
+  animation: testimonials-marquee 40s linear infinite;
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+.testimonials-marquee-group {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1rem;
+  padding-right: 1rem;
+}
+
+.testimonials-marquee:hover .testimonials-marquee-track,
+.testimonials-marquee:focus-within .testimonials-marquee-track {
+  animation-play-state: paused;
+}
+
+.nature-birds {
+  animation: nature-birds-drift 12s ease-in-out infinite;
+  overflow: visible;
+  will-change: transform;
+}
+
+.nature-bird {
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.nature-bird--one {
+  animation: nature-bird-wing 3.8s ease-in-out infinite;
+}
+
+.nature-bird--two {
+  animation: nature-bird-wing 4.4s ease-in-out -1.2s infinite;
+}
+
+.nature-bird--three {
+  animation: nature-bird-wing 3.4s ease-in-out -2s infinite;
+}
+
+.nature-root {
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.nature-root--main {
+  animation: nature-root-draw 11s ease-in-out infinite alternate;
+  stroke-dasharray: 1650;
+  stroke-dashoffset: 1650;
+  stroke-width: 1.5;
+}
+
+.nature-root--branch {
+  animation: nature-root-draw 11s ease-in-out 1.6s infinite alternate;
+  opacity: 0.72;
+  stroke-dasharray: 760;
+  stroke-dashoffset: 760;
+  stroke-width: 1.2;
+}
+
+.nature-root--fine {
+  animation: nature-root-draw 11s ease-in-out 2.4s infinite alternate;
+  opacity: 0.42;
+  stroke-dasharray: 480;
+  stroke-dashoffset: 480;
+  stroke-width: 1;
+}
+
+.nature-foliage {
+  animation: nature-foliage-sway 7s ease-in-out infinite;
+  overflow: visible;
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  will-change: transform;
+}
+
+.nature-stem,
+.nature-leaf path {
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.4;
+}
+
+.nature-leaf {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+
+.nature-leaf--one {
+  animation: nature-leaf-breathe 5.2s ease-in-out infinite;
+}
+
+.nature-leaf--two {
+  animation: nature-leaf-breathe 6s ease-in-out -1.8s infinite;
+}
+
+.nature-leaf--three {
+  animation: nature-leaf-breathe 4.8s ease-in-out -2.7s infinite;
+}
+
+.nature-footprint {
+  animation: nature-footprint-step 4.8s ease-in-out infinite;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.35;
+}
+
+.nature-footprint--2 {
+  animation-delay: 0.6s;
+}
+
+.nature-footprint--3 {
+  animation-delay: 1.2s;
+}
+
+.nature-footprint--4 {
+  animation-delay: 1.8s;
+}
+
+.section-transition::before {
+  background: radial-gradient(
+    circle at center,
+    rgba(185, 255, 74, 0.035),
+    transparent 68%
+  );
+  content: "";
+  height: 28rem;
+  left: -10rem;
+  pointer-events: none;
+  position: absolute;
+  top: 24%;
+  width: 28rem;
+  z-index: -1;
+}
+
+.section-transition--mist::after {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(214, 233, 210, 0.055),
+    transparent 68%
+  );
+  content: "";
+  filter: blur(20px);
+  height: 24rem;
+  pointer-events: none;
+  position: absolute;
+  right: -12rem;
+  top: 38%;
+  width: 32rem;
+  z-index: -1;
+}
+
+.experiences-intro::before {
+  background:
+    radial-gradient(
+      ellipse at 34% 62%,
+      rgba(185, 255, 74, 0.055),
+      transparent 34%
+    ),
+    radial-gradient(
+      ellipse at 76% 34%,
+      rgba(255, 255, 255, 0.025),
+      transparent 30%
+    );
+  content: "";
+  inset: -2rem -3rem;
+  pointer-events: none;
+  position: absolute;
+}
+
+.experiences-title-accent::before {
+  background: rgba(185, 255, 74, 0.12);
+  border-radius: 50%;
+  content: "";
+  filter: blur(18px);
+  inset: 28% 2% 4%;
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+
+.experiences-callout::before {
+  animation: experiences-outline-primary 6s ease-in-out infinite;
+  will-change: border-radius, transform;
+}
+
+.experiences-callout::after {
+  animation: experiences-outline-secondary 7.5s ease-in-out infinite;
+  will-change: border-radius, transform;
+}
+
+.experiences-callout-arrow {
+  animation: experiences-arrow-float 4.8s ease-in-out infinite;
+  will-change: transform;
+}
+
+.experiences-callout-arrow-line {
+  animation: experiences-arrow-draw 4.8s ease-in-out infinite;
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+}
+
+.experiences-callout-arrow-head {
+  animation: experiences-arrow-head 4.8s ease-in-out infinite;
+}
+
+.experiences-title-accent::after {
+  background-image: radial-gradient(
+    circle,
+    rgba(185, 255, 74, 0.32) 0 1px,
+    transparent 1.5px
+  );
+  background-size: 0.65rem 0.65rem;
+  bottom: -0.7rem;
+  content: "";
+  height: 0.7rem;
+  opacity: 0.34;
+  pointer-events: none;
+  position: absolute;
+  right: 0.2rem;
+  width: 2.6rem;
+}
+
+.section-transition--canopy::after {
+  background: radial-gradient(
+    circle at center,
+    rgba(185, 255, 74, 0.035),
+    transparent 68%
+  );
+  content: "";
+  height: 30rem;
+  left: 8%;
+  pointer-events: none;
+  position: absolute;
+  top: 34%;
+  width: 30rem;
+  z-index: -1;
 }
 
 .hero-spotlight {
@@ -616,12 +999,12 @@ button:disabled,
 
 @keyframes motion-text-reveal {
   from {
-    clip-path: inset(0 0 100% 0);
+    clip-path: inset(-0.12em 0 calc(100% + 0.18em) 0);
     opacity: 0;
     transform: translateY(12px);
   }
   to {
-    clip-path: inset(0);
+    clip-path: inset(-0.12em 0 -0.18em 0);
     opacity: 1;
     transform: translateY(0);
   }
@@ -641,6 +1024,142 @@ button:disabled,
   to {
     opacity: 0.2;
     transform: translate3d(4%, -2%, 0) scale(1.08);
+  }
+}
+
+@keyframes testimonials-marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes experiences-outline-primary {
+  0%,
+  100% {
+    border-radius: 58% 42% 61% 39% / 46% 57% 43% 54%;
+    transform: rotate(-2deg) scale(1);
+  }
+  50% {
+    border-radius: 43% 57% 48% 52% / 57% 42% 58% 43%;
+    transform: rotate(0.5deg) scale(1.025);
+  }
+}
+
+@keyframes experiences-outline-secondary {
+  0%,
+  100% {
+    border-radius: 43% 57% 39% 61% / 59% 44% 56% 41%;
+    transform: rotate(2deg) scale(1);
+  }
+  50% {
+    border-radius: 56% 44% 62% 38% / 42% 58% 45% 55%;
+    transform: rotate(-1deg) scale(0.985);
+  }
+}
+
+@keyframes experiences-arrow-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-1deg);
+  }
+  50% {
+    transform: translate3d(5px, 6px, 0) rotate(1deg);
+  }
+}
+
+@keyframes experiences-arrow-draw {
+  0%,
+  12% {
+    opacity: 0;
+    stroke-dashoffset: 220;
+  }
+  42%,
+  82% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes experiences-arrow-head {
+  0%,
+  38% {
+    opacity: 0;
+  }
+  48%,
+  82% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes nature-birds-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-14px, 7px, 0);
+  }
+}
+
+@keyframes nature-bird-wing {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.76);
+  }
+}
+
+@keyframes nature-root-draw {
+  0%,
+  12% {
+    opacity: 0.2;
+    stroke-dashoffset: 1650;
+  }
+  72%,
+  100% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes nature-foliage-sway {
+  0%,
+  100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
+@keyframes nature-leaf-breathe {
+  0%,
+  100% {
+    transform: rotate(-1deg) scale(1);
+  }
+  50% {
+    transform: rotate(3deg) scale(1.035);
+  }
+}
+
+@keyframes nature-footprint-step {
+  0%,
+  18%,
+  100% {
+    opacity: 0.12;
+  }
+  38%,
+  68% {
+    opacity: 0.9;
   }
 }
 
@@ -681,9 +1200,27 @@ button:disabled,
   .hero-secondary-card {
     transform: none;
   }
+
+  .scroll-reveal,
+  .scroll-reveal::before {
+    border-radius: 0 !important;
+    filter: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .in-view-reveal {
+    filter: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 @media (max-width: 639px) {
+  .testimonials-marquee-track {
+    animation-duration: 48s;
+  }
+
   .intro-photo {
     object-position: 52% center;
   }
@@ -704,7 +1241,7 @@ button:disabled,
 
   .hero-primary-media {
     filter: saturate(0.84) contrast(1.03) brightness(0.78);
-    object-position: 54% center;
+    object-position: 40% center;
   }
 
   .hero-topography,

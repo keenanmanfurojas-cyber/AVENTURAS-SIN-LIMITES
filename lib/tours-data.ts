@@ -2,7 +2,6 @@ import { imageAssets } from "@/lib/image-assets";
 import type { Tour } from "@/types/content";
 
 const ciudadEsmeraldaPolicy = [
-  "La reserva es de ₡10.000 por persona.",
   "La reserva no es reembolsable si el tour se realiza y la persona no asiste.",
   "Si las condiciones climáticas o de seguridad impiden realizar el tour, se coordinará una nueva fecha.",
   "Toda salida está sujeta a condiciones climáticas, disponibilidad y valoración de seguridad.",
@@ -56,7 +55,7 @@ export const tours: Tour[] = [
     name: "Tour al Cañón Ciudad Esmeralda",
     category: "Aventura acuática",
     modality:
-      "Llegada al punto de encuentro / sin transporte desde la GAM",
+      "Elige entre un tour privado con llegada al punto de encuentro o una salida grupal con transporte desde la GAM.",
     modalityLabel: "Sin transporte",
     location: "Sucre, Ciudad Quesada, San Carlos, Costa Rica",
     meetingPoint:
@@ -65,8 +64,17 @@ export const tours: Tour[] = [
       "La Vieja Adventures, Sucre, Ciudad Quesada, Costa Rica",
     parking: "Disponible, con espacio para más de 40 vehículos.",
     availabilityType:
-      "Disponible mediante coordinación previa, entre semana o fines de semana, siempre sujeto a disponibilidad, condiciones climáticas y seguridad de la ruta.",
-    officialDates: [],
+      "El tour privado se coordina previamente. Las salidas grupales con transporte desde la GAM se realizan en fechas programadas. Todas las modalidades están sujetas a disponibilidad, condiciones climáticas y seguridad de la ruta.",
+    officialDates: [
+      {
+        label: "Domingo 30 de agosto de 2026",
+        date: "2026-08-30",
+      },
+      {
+        label: "Domingo 20 de septiembre de 2026",
+        date: "2026-09-20",
+      },
+    ],
     startTime: "Entre 7:00 a. m. y 8:00 a. m.",
     temperature: null,
     distance: "6 km en total, ida y vuelta",
@@ -80,21 +88,11 @@ export const tours: Tour[] = [
       "Vista oficial del paisaje montañoso asociado al Tour al Cañón Ciudad Esmeralda",
     gallery: [],
     shortDescription:
-      "Una experiencia acuática técnica de 6 km en Sucre, Ciudad Quesada, con guías locales y equipo de seguridad.",
+      "Una experiencia acuática técnica de 6 km con modalidad privada o transporte grupal desde la GAM.",
     fullDescription:
-      "Recorrido de aventura acuática en el Cañón Ciudad Esmeralda, con llegada directa al punto de encuentro en Sucre. La salida se coordina previamente y depende de la disponibilidad, el clima y la valoración de seguridad de la ruta.",
-    includes: [
-      "Entrada.",
-      "Equipo de seguridad.",
-      "Guías locales.",
-      "Contenido audiovisual.",
-    ],
-    excludes: [
-      "Transporte desde la GAM.",
-      "Alimentación, salvo que sea confirmada posteriormente.",
-      "Gastos personales.",
-      "Artículos no especificados.",
-    ],
+      "Recorrido de aventura acuática en el Cañón Ciudad Esmeralda, en Sucre de Ciudad Quesada. Una experiencia entre naturaleza, agua y paisajes extraordinarios, sujeta a disponibilidad, condiciones climáticas y valoración de seguridad de la ruta.",
+    includes: ["Entrada.", "Equipo de seguridad.", "Guías locales.", "Contenido audiovisual."],
+    excludes: ["Gastos personales.", "Artículos no especificados."],
     whatToBring: [
       "Mochila impermeable.",
       "Mínimo 1,5 litros de agua por persona.",
@@ -114,11 +112,11 @@ export const tours: Tour[] = [
       "La salida está sujeta a condiciones climáticas, disponibilidad y valoración de seguridad. Si no es seguro realizarla, se coordinará una nueva fecha.",
     cancellationPolicy: ciudadEsmeraldaPolicy,
     transportation:
-      "No incluye transporte desde la GAM. Cada participante llega al punto de encuentro.",
+      "La modalidad grupal incluye transporte desde la GAM. En la modalidad privada, el grupo llega directamente al punto de encuentro.",
     meals:
-      "No incluye alimentación, salvo que sea confirmada posteriormente.",
+      "La modalidad grupal incluye alimentación. En la modalidad privada puede agregarse como extra opcional.",
     whatsappMessage:
-      "Hola, deseo información para reservar el Tour al Cañón Ciudad Esmeralda sin transporte. Deseo consultar una fecha personalizada sujeta a disponibilidad. ¿Podrían confirmarme disponibilidad?",
+      "Hola, deseo información para reservar el Tour al Cañón Ciudad Esmeralda. ¿Podrían ayudarme a elegir la modalidad adecuada?",
     active: true,
     temporaryImage: false,
   },
@@ -204,7 +202,7 @@ export const tours: Tour[] = [
     meals: "Incluye alimentación.",
     whatsappMessage:
       "Hola, deseo información para reservar el Tour Grupal al Cañón Ciudad Esmeralda con transporte. ¿Podrían ayudarme a elegir una de las fechas programadas y confirmarme disponibilidad?",
-    active: true,
+    active: false,
     temporaryImage: false,
   },
   {
@@ -332,6 +330,76 @@ export const tours: Tour[] = [
     meals: "Incluye alimentación.",
     whatsappMessage:
       "Hola, deseo información para reservar el Tour Amanecer en Volcán Platanar con transporte. Deseo elegir una fecha programada o consultar una fecha privada. ¿Podrían confirmarme disponibilidad y los puntos de salida?",
+    active: true,
+    temporaryImage: false,
+  },
+  {
+    id: "entre-volcanes-guatemala",
+    slug: "entre-volcanes-guatemala",
+    name: "Entre Volcanes Guatemala",
+    category: "Expedición internacional",
+    modality: "Viví historia, cultura y mucha aventura.",
+    modalityLabel: "Paquete internacional",
+    location: "Guatemala",
+    meetingPoint: null,
+    mapsQuery: null,
+    parking: null,
+    availabilityType: "Disponible en las fechas oficiales publicadas.",
+    officialDates: [
+      {
+        label: "Del 23 al 26 de noviembre",
+        date: "23-26-noviembre",
+      },
+      {
+        label: "Del 9 al 12 de diciembre",
+        date: "9-12-diciembre",
+      },
+      {
+        label: "Del 13 al 16 de enero",
+        date: "13-16-enero",
+      },
+    ],
+    startTime: "",
+    temperature: null,
+    distance: "",
+    duration: "4 días y 3 noches",
+    difficulty: "Intermedio – avanzado",
+    priceCrc: 0,
+    priceUsd: 790,
+    installmentPriceUsd: 815,
+    reservationAmountCrc: 0,
+    mainImage: imageAssets.tours.entreVolcanesGuatemala,
+    imageAlt: "Volcán de Fuego en Guatemala durante una expedición nocturna",
+    gallery: [],
+    shortDescription:
+      "Una expedición entre volcanes, historia y cultura guatemalteca, diseñada para vivir una aventura intensa entre naturaleza, ciudades y paisajes inolvidables.",
+    fullDescription:
+      "Una expedición entre volcanes, historia y cultura guatemalteca, diseñada para vivir una aventura intensa entre naturaleza, ciudades y paisajes inolvidables.",
+    includes: [
+      "Boletos de avión, ida y vuelta",
+      "Transporte privado, ida y vuelta",
+      "Merienda",
+      "Entradas a las actividades",
+      "Guías y coordinadores",
+      "Contenido",
+      "Hospedaje privado",
+      "Campamento en el volcán",
+      "Alimentación de tres tiempos en el volcán",
+      "Visita a ciudades y otras experiencias",
+    ],
+    excludes: [],
+    whatToBring: [],
+    recommendedEquipment: [],
+    departurePoints: [],
+    departureNotice: null,
+    physicalNotice: null,
+    weatherNotice: "",
+    cancellationPolicy: [],
+    transportation: "Incluye transporte privado, ida y vuelta.",
+    meals:
+      "Incluye merienda y alimentación de tres tiempos en el volcán.",
+    whatsappMessage:
+      "Hola, quiero recibir información y reservar el paquete Entre Volcanes Guatemala.",
     active: true,
     temporaryImage: false,
   },

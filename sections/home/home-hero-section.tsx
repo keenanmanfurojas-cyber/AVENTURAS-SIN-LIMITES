@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { NatureDecoration } from "@/components/effects/nature-decoration";
 import { Container } from "@/components/layout/container";
 import { ActionLink } from "@/components/ui/action-link";
 import { Badge } from "@/components/ui/badge";
@@ -21,21 +22,25 @@ export function HomeHeroSection() {
       id="inicio"
     >
       <Image
-        alt="Volcán entre bosque tropical y nubes al atardecer"
+        alt="Cascada de agua celeste rodeada por bosque tropical"
         className="hero-primary-media object-cover object-center"
         fill
         priority
         quality={88}
         sizes="100vw"
-        src={imageAssets.home.welcome}
+        src={imageAssets.home.hero}
       />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,6,5,0.72)_0%,rgba(5,6,5,0.35)_48%,rgba(5,6,5,0.08)_78%),linear-gradient(0deg,rgba(5,6,5,0.78)_0%,transparent_48%,rgba(5,6,5,0.28)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,6,5,0.76)_0%,rgba(5,6,5,0.38)_50%,rgba(5,6,5,0.12)_82%),linear-gradient(0deg,rgba(5,6,5,0.82)_0%,rgba(5,6,5,0.12)_58%,rgba(5,6,5,0.34)_100%)]" />
       <div
         aria-hidden="true"
         className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-obsidian via-obsidian/35 to-transparent"
       />
+      <NatureDecoration
+        className="absolute right-[5%] top-28 z-[2] hidden w-44 text-white/20 md:block xl:right-[8%] xl:w-52"
+        variant="birds"
+      />
 
-      <Container className="relative z-10 flex min-h-[100svh] flex-col justify-end pb-12 pt-32 sm:pb-14 lg:pb-16 lg:pt-40">
+      <Container className="relative z-10 flex min-h-[100svh] flex-col justify-end pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-28 sm:pb-14 sm:pt-32 lg:pb-16 lg:pt-40">
         <div className="w-full">
           <div className="motion-fade-up">
             <Badge
@@ -47,15 +52,15 @@ export function HomeHeroSection() {
           </div>
 
           <h1
-            className="motion-text-reveal text-balance mt-7 w-full max-w-[75rem] overflow-visible pb-[0.12em] font-[family-name:var(--font-manrope)] text-[clamp(3.25rem,7.1vw,8.2rem)] font-extrabold leading-[0.94] tracking-[-0.045em] text-white"
+            className="motion-text-reveal text-balance mt-5 w-full max-w-[75rem] overflow-visible pb-[0.18em] font-[family-name:var(--font-manrope)] text-[clamp(2.75rem,13.5vw,8.2rem)] font-extrabold leading-[0.98] tracking-[-0.045em] text-white sm:mt-7 sm:leading-[0.94]"
             id="home-hero-title"
           >
-            Aventuras que despiertan{" "}
+            Aventuras que despie<span className="mr-[0.04em]">r</span>tan{" "}
             <span className="text-[#b9ff4a]">algo en ti.</span>
           </h1>
 
-          <div className="mt-8 grid items-end gap-7 md:grid-cols-[minmax(0,34rem)_auto] md:justify-between lg:mt-10">
-            <p className="motion-fade-up max-w-xl text-base font-light leading-7 text-stone-200 sm:text-lg sm:leading-8">
+          <div className="mt-5 grid items-end gap-5 sm:mt-7 md:grid-cols-[minmax(0,34rem)_auto] md:justify-between md:gap-7 lg:mt-8">
+            <p className="motion-fade-up max-w-xl font-[family-name:var(--font-poppins)] text-[clamp(0.94rem,3.9vw,1.125rem)] font-medium leading-[1.65] text-stone-100">
               Explora cañones, volcanes y paisajes extraordinarios junto a
               guías locales.
             </p>
@@ -79,7 +84,7 @@ export function HomeHeroSection() {
             </div>
           </div>
 
-          <div className="mt-9 flex flex-col gap-5 border-t border-white/15 pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-white/10 bg-black/25 px-4 py-4 shadow-[0_18px_55px_rgba(0,0,0,0.2)] backdrop-blur-md sm:mt-9 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-5">
             <ul
               aria-label="Características de las experiencias"
               className="flex flex-wrap gap-x-7 gap-y-3"
@@ -98,17 +103,30 @@ export function HomeHeroSection() {
               {siteConfig.brandLine}
             </p>
           </div>
+
+          <a
+            aria-label="Desliza hacia abajo para ver todas las experiencias"
+            className="motion-fade-up group mx-auto mt-5 flex w-fit flex-col items-center gap-1.5 font-[family-name:var(--font-poppins)] text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-stone-300 transition-colors hover:text-[#b9ff4a] sm:mt-6"
+            href="#tours"
+          >
+            <span>Desliza para descubrir más</span>
+            <svg
+              aria-hidden="true"
+              className="hero-scroll-indicator size-5 text-[#b9ff4a]"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="m6 9 6 6 6-6"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
+            </svg>
+          </a>
         </div>
       </Container>
-
-      <a
-        aria-label="Desplazarse a las experiencias"
-        className="absolute bottom-5 right-8 z-20 hidden items-center gap-3 text-[0.52rem] font-semibold uppercase tracking-[0.24em] text-stone-300 transition-colors hover:text-[#b9ff4a] xl:flex"
-        href="#tours"
-      >
-        Descubrir
-        <span className="h-px w-12 bg-gradient-to-r from-white/60 to-transparent" />
-      </a>
     </section>
   );
 }

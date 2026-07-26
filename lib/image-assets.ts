@@ -7,14 +7,15 @@ export const imageAssets = {
     introVolcano: "/videos/intro-volcan.mp4",
   },
   home: {
-    welcome: "/images/home/arenal-welcome.png",
-    hero: "/images/home/costa-rica-home-hero.png",
+    welcome: "/images/home/hero-volcan-via-lactea.jpg.png",
+    hero: "/images/home/costa-rica-home-hero.png?v=cascada-celeste",
   },
   tours: {
-    ciudadEsmeralda: "/images/tours/canon-ciudad-esmeralda.webp",
-    volcanPlatanar: "/images/tours/volcan-platanar.webp",
-    waterfall: "/images/tours/canon-ciudad-esmeralda.webp",
-    volcano: "/images/tours/volcan-platanar.webp",
-    rafting: "/images/tours/tour-rafting.png",
+    ciudadEsmeralda:
+      "/images/tours/VOLCAN PLATANAR/volcan-platanar.webp",
+    volcanPlatanar:
+      "/images/tours/CIUDAD ESMERALDA/ciudad-esmeralda.webp",
+    entreVolcanesGuatemala:
+      "/images/tours/ENTRE VOLCANES GUATEMALA/volcan-fuego.png",
   },
 } as const;

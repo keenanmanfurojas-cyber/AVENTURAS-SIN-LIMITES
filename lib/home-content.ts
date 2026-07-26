@@ -1,5 +1,4 @@
 import type {
-  Benefit,
   FaqItem,
   GalleryImage,
   NavigationItem,
@@ -8,84 +7,33 @@ import type {
 import { imageAssets } from "@/lib/image-assets";
 
 export const navigationItems: NavigationItem[] = [
-  { label: "Inicio", href: "/#inicio" },
-  { label: "Tours", href: "/#tours" },
-  { label: "Experiencias", href: "/#experiencias" },
-  { label: "Nosotros", href: "/#nosotros" },
-  { label: "Galería", href: "/#galeria" },
-  { label: "Preguntas frecuentes", href: "/#preguntas" },
-  { label: "Contacto", href: "/#contacto" },
-];
-
-export const benefits: Benefit[] = [
-  {
-    icon: "compass",
-    title: "Experiencias auténticas",
-    description:
-      "Rutas con carácter local, lejos de fórmulas impersonales.",
-  },
-  {
-    icon: "users",
-    title: "Guías locales",
-    description:
-      "Conocimiento del territorio contado por quienes lo viven.",
-  },
-  {
-    icon: "heart",
-    title: "Atención personalizada",
-    description:
-      "Escuchamos tu ritmo, intereses y forma de viajar.",
-  },
-  {
-    icon: "shield",
-    title: "Seguridad",
-    description:
-      "Planificación responsable y acompañamiento en cada etapa.",
-  },
-  {
-    icon: "leaf",
-    title: "Naturaleza y conexión",
-    description:
-      "Encuentros respetuosos con ecosistemas extraordinarios.",
-  },
-  {
-    icon: "spark",
-    title: "Grupos bien organizados",
-    description:
-      "Experiencias cuidadas para compartir sin perder cercanía.",
-  },
+  { label: "Inicio", href: "/" },
+  { label: "Tours", href: "/explorar#tours" },
+  { label: "Experiencias", href: "/explorar#experiencias" },
+  { label: "Nosotros", href: "/explorar#nosotros" },
+  { label: "Galería", href: "/explorar#galeria" },
+  { label: "Preguntas frecuentes", href: "/explorar#preguntas" },
+  { label: "Contacto", href: "/explorar#contacto" },
 ];
 
 export const galleryImages: GalleryImage[] = [
   {
-    src: imageAssets.home.hero,
-    alt: "Grupo contemplando montañas y selva de Costa Rica",
-    caption: "Horizontes que transforman",
-    className: "md:col-span-2 md:row-span-2",
-  },
-  {
-    src: imageAssets.tours.waterfall,
-    alt: "Paisaje montañoso oficial asociado a Ciudad Esmeralda",
+    src: imageAssets.tours.ciudadEsmeralda,
+    alt: "Paisaje montañoso verde entre nubes de Ciudad Esmeralda",
     caption: "Ciudad Esmeralda",
-    className: "",
+    className: "md:row-span-2",
   },
   {
-    src: imageAssets.tours.volcano,
-    alt: "Formación rocosa y cauce natural en la ruta del Volcán Platanar",
+    src: imageAssets.tours.volcanPlatanar,
+    alt: "Grieta rocosa entre bosque en la ruta del Volcán Platanar",
     caption: "Volcán Platanar",
     className: "md:row-span-2",
   },
   {
-    src: imageAssets.home.welcome,
-    alt: "Volcán Arenal al amanecer",
-    caption: "La fuerza del Arenal",
-    className: "",
-  },
-  {
-    src: imageAssets.tours.rafting,
-    alt: "Aventura de rafting en un río rodeado de selva",
-    caption: "Ríos vivos",
-    className: "md:col-span-2",
+    src: imageAssets.tours.entreVolcanesGuatemala,
+    alt: "Volcán de Fuego en Guatemala durante una expedición nocturna",
+    caption: "Entre Volcanes Guatemala",
+    className: "md:row-span-2",
   },
 ];
 
@@ -93,22 +41,127 @@ export const testimonials: Testimonial[] = [
   {
     quote:
       "La organización se sintió cercana desde el primer mensaje y cada paisaje superó lo que imaginábamos.",
-    author: "Ejemplo de viajero",
-    context: "Contenido demostrativo · pendiente de testimonio real",
+    author: "Laura M.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 98,
     isDemo: true,
   },
   {
     quote:
       "No fue solo una caminata: fue una forma distinta de entender el bosque y volver a conectar.",
-    author: "Ejemplo de viajera",
-    context: "Contenido demostrativo · pendiente de testimonio real",
+    author: "Andrés C.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 96,
     isDemo: true,
   },
   {
     quote:
       "El ritmo del grupo, la seguridad y el conocimiento local hicieron que todo se sintiera especial.",
-    author: "Ejemplo de grupo",
-    context: "Contenido demostrativo · pendiente de testimonio real",
+    author: "Sofía R.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 99,
+    isDemo: true,
+  },
+  {
+    quote:
+      "Cada detalle estuvo bien coordinado y pudimos concentrarnos en disfrutar la aventura.",
+    author: "Daniel R.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 97,
+    isDemo: true,
+  },
+  {
+    quote:
+      "Caminar entre montañas y respirar aire puro convirtió el viaje en un recuerdo inolvidable.",
+    author: "María G.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 100,
+    isDemo: true,
+  },
+  {
+    quote:
+      "Los guías transmitieron confianza, conocimiento y una pasión genuina por cada sendero.",
+    author: "Carlos V.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 98,
+    isDemo: true,
+  },
+  {
+    quote:
+      "La experiencia frente al volcán fue intensa, segura y mucho más emocionante de lo esperado.",
+    author: "Fernanda P.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 99,
+    isDemo: true,
+  },
+  {
+    quote:
+      "Todo el recorrido tuvo un ritmo agradable y espacios para conectar de verdad con la naturaleza.",
+    author: "José A.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 96,
+    isDemo: true,
+  },
+  {
+    quote:
+      "La seguridad y la atención del equipo hicieron que disfrutara cada tramo del senderismo.",
+    author: "Valeria C.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 98,
+    isDemo: true,
+  },
+  {
+    quote:
+      "Paisajes increíbles, buena organización y una energía de grupo que hizo especial el camino.",
+    author: "Gabriel M.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 97,
+    isDemo: true,
+  },
+  {
+    quote:
+      "Volví con una conexión más profunda con el bosque y recuerdos que quiero conservar siempre.",
+    author: "Paula R.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 100,
+    isDemo: true,
+  },
+  {
+    quote:
+      "La aventura combinó desafío, naturaleza y acompañamiento profesional en todo momento.",
+    author: "Diego S.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 95,
+    isDemo: true,
+  },
+  {
+    quote:
+      "Cada vista recompensó el esfuerzo y los guías hicieron que la ruta se sintiera cercana y segura.",
+    author: "Natalia H.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 99,
+    isDemo: true,
+  },
+  {
+    quote:
+      "Fue una experiencia completa: aventura, aprendizaje y momentos únicos en plena naturaleza.",
+    author: "Luis C.",
+    context: "Contenido demostrativo",
+    rating: 5,
+    satisfaction: 98,
     isDemo: true,
   },
 ];
