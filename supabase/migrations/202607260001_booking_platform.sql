@@ -60,7 +60,7 @@ create unique index bookings_one_approved_private_per_date_idx
   on public.bookings (selected_date)
   where booking_mode = 'private' and status = 'approved';
 
-create table public.participants (
+create table public.booking_participants (
   id uuid primary key default gen_random_uuid(),
   booking_id uuid not null references public.bookings(id) on delete cascade,
   position integer not null check (position > 0),
@@ -145,7 +145,8 @@ create trigger buyers_set_updated_at before update on public.buyers
 for each row execute function public.set_updated_at();
 create trigger bookings_set_updated_at before update on public.bookings
 for each row execute function public.set_updated_at();
-create trigger participants_set_updated_at before update on public.participants
+create trigger booking_participants_set_updated_at
+before update on public.booking_participants
 for each row execute function public.set_updated_at();
 create trigger tour_dates_set_updated_at before update on public.tour_dates
 for each row execute function public.set_updated_at();
@@ -307,7 +308,7 @@ begin
   for participant in
     select value from jsonb_array_elements(payload->'participants')
   loop
-    insert into public.participants (
+    insert into public.booking_participants (
       booking_id, position, full_name, phone, has_medical_condition,
       medical_details, physical_condition
     )
@@ -323,7 +324,7 @@ begin
   end loop;
 
   if (
-    select count(*) from public.participants
+    select count(*) from public.booking_participants
     where booking_id = new_booking.id
   ) <> requested_quantity then
     raise exception using errcode = '22023', message = 'PARTICIPANT_COUNT_MISMATCH';
@@ -573,7 +574,7 @@ group by td.id;
 
 alter table public.buyers enable row level security;
 alter table public.bookings enable row level security;
-alter table public.participants enable row level security;
+alter table public.booking_participants enable row level security;
 alter table public.tour_dates enable row level security;
 alter table public.admin_actions enable row level security;
 alter table public.blocked_dates enable row level security;

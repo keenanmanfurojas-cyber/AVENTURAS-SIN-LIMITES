@@ -5,6 +5,11 @@ const migration = await readFile(
   "supabase/migrations/202607260001_booking_platform.sql",
   "utf8",
 );
+const adminMigration = await readFile(
+  "supabase/migrations/202607270001_admin_profiles_and_rls.sql",
+  "utf8",
+);
+const allMigrations = `${migration}\n${adminMigration}`;
 const repository = await readFile(
   "lib/bookings/supabase-repository.ts",
   "utf8",
@@ -17,7 +22,9 @@ const adminClient = await readFile("lib/supabase/admin.ts", "utf8");
 const adminAuth = await readFile("lib/admin-auth.ts", "utf8");
 
 const checks = [
-  ["seven domain tables", (migration.match(/create table public\./g) ?? []).length === 7],
+  ["eight domain tables", (allMigrations.match(/create table public\./g) ?? []).length === 8],
+  ["booking participants table", /create table public\.booking_participants/.test(migration)],
+  ["admin profiles table", /create table public\.admin_profiles/.test(adminMigration)],
   ["booking code unique", /booking_code text not null unique/.test(migration)],
   ["positive quantity", /quantity > 0/.test(migration)],
   ["non-negative total", /total_amount >= 0/.test(migration)],
@@ -32,13 +39,15 @@ const checks = [
   ["group capacity enforced", /GROUP_CAPACITY_EXCEEDED/.test(migration)],
   ["transactional creation RPC", /create_booking_transaction/.test(migration)],
   ["transactional approval RPC", /transition_booking_status/.test(migration)],
-  ["RLS enabled", (migration.match(/enable row level security/g) ?? []).length === 7],
+  ["RLS enabled", (allMigrations.match(/enable row level security/g) ?? []).length >= 8],
+  ["explicit admin policies", (adminMigration.match(/create policy/g) ?? []).length >= 10],
+  ["no public reservation policy", !/to anon/.test(adminMigration)],
   ["private bucket", /'booking-payment-proofs'/.test(migration) && /false,\n  5242880/.test(migration)],
   ["5 MB server limit", /5 \* 1024 \* 1024/.test(validation)],
   ["file signature validation", /bytes\[0\] === 255/.test(validation) && /WEBP/.test(validation)],
   ["signed URL is short", /signedUrlLifetimeSeconds = 60/.test(repository)],
   ["service role server-only", /import \"server-only\"/.test(adminClient)],
-  ["production JSON disabled", /NODE_ENV === \"development\"/.test(await readFile("lib/bookings/index.ts", "utf8"))],
+  ["JSON persistence not composed", !/LocalBookingRepository/.test(await readFile("lib/bookings/index.ts", "utf8"))],
   ["production admin blocked", /NODE_ENV !== \"production\"/.test(adminAuth)],
   ["proof cleanup on failure", /remove\(\[proofPath\]\)/.test(repository)],
   ["booking code retries", /bookingCodeAttempts = 5/.test(repository)],

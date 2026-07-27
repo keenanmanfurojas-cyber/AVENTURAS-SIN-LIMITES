@@ -93,7 +93,7 @@ type BookingRow = {
 const bookingDetailsSelection = `
   *,
   buyer:buyers(*),
-  participants(*),
+  participants:booking_participants(*),
   admin_actions(*),
   calendar_syncs(*)
 `;
