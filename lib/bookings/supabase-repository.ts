@@ -90,7 +90,7 @@ type BookingRow = {
   updated_at: string;
 };
 
-const bookingDetailsSelection = `
+export const bookingDetailsSelection = `
   *,
   buyer:buyers(*),
   participants:booking_participants(*),
@@ -127,7 +127,8 @@ function mapAdminAction(row: AdminActionRow): BookingAdminAction {
   };
 }
 
-function mapBooking(row: BookingRow): BookingRecord {
+export function mapSupabaseBookingRow(value: unknown): BookingRecord {
+  const row = value as BookingRow;
   const transport = row.transport_details ?? {};
   const food = row.food_details ?? {};
   const participants = [...(row.participants ?? [])].sort(
@@ -359,7 +360,7 @@ export class SupabaseBookingRepository implements BookingRepository {
         cause: error,
       });
     }
-    return data ? mapBooking(data as unknown as BookingRow) : null;
+    return data ? mapSupabaseBookingRow(data) : null;
   }
 
   async getBookingDetails(id: string) {
@@ -373,7 +374,7 @@ export class SupabaseBookingRepository implements BookingRepository {
         cause: error,
       });
     }
-    return data ? mapBooking(data as unknown as BookingRow) : null;
+    return data ? mapSupabaseBookingRow(data) : null;
   }
 
   async list(filters: BookingFilters = {}) {
@@ -396,7 +397,7 @@ export class SupabaseBookingRepository implements BookingRepository {
       });
     }
     const records = (data ?? []).map((row) =>
-      mapBooking(row as unknown as BookingRow),
+      mapSupabaseBookingRow(row),
     );
     const name = filters.name?.trim().toLocaleLowerCase("es");
     const search = filters.search?.trim().toLocaleLowerCase("es");

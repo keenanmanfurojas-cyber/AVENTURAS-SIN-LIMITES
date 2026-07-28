@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { adminCookieName } from "@/lib/admin-auth";
+import { requestHasTrustedOrigin } from "@/lib/admin-auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export async function POST() {
-  const response = NextResponse.json({ ok: true });
-  response.cookies.set(adminCookieName, "", {
-    httpOnly: true,
-    maxAge: 0,
-    sameSite: "strict",
-    path: "/",
-  });
-  return response;
+export async function POST(request: Request) {
+  if (!requestHasTrustedOrigin(request)) {
+    return NextResponse.json({ error: "Solicitud no permitida." }, { status: 403 });
+  }
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
+  return NextResponse.json({ ok: true });
 }

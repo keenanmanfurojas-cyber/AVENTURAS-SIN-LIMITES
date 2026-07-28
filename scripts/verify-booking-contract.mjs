@@ -20,6 +20,15 @@ const validation = await readFile(
 );
 const adminClient = await readFile("lib/supabase/admin.ts", "utf8");
 const adminAuth = await readFile("lib/admin-auth.ts", "utf8");
+const adminLogin = await readFile("app/api/admin/login/route.ts", "utf8");
+const adminAction = await readFile(
+  "app/api/admin/reservas/[id]/route.ts",
+  "utf8",
+);
+const proofRoute = await readFile(
+  "app/api/admin/reservas/[id]/comprobante/route.ts",
+  "utf8",
+);
 
 const checks = [
   ["eight domain tables", (allMigrations.match(/create table public\./g) ?? []).length === 8],
@@ -48,7 +57,13 @@ const checks = [
   ["signed URL is short", /signedUrlLifetimeSeconds = 60/.test(repository)],
   ["service role server-only", /import \"server-only\"/.test(adminClient)],
   ["JSON persistence not composed", !/LocalBookingRepository/.test(await readFile("lib/bookings/index.ts", "utf8"))],
-  ["production admin blocked", /NODE_ENV !== \"production\"/.test(adminAuth)],
+  ["Supabase Auth session validation", /auth\.getUser\(\)/.test(adminAuth)],
+  ["active admin profile validation", /admin_profiles/.test(adminAuth) && /is_active/.test(adminAuth)],
+  ["password login through Supabase Auth", /signInWithPassword/.test(adminLogin)],
+  ["no public admin signup", !/signUp/.test(adminLogin)],
+  ["admin actor recorded", /action_actor_id: access\.user\.id/.test(adminAction)],
+  ["proof route validates active admin", /access\.profile/.test(proofRoute)],
+  ["proof signed URL lasts 60 seconds", /createSignedUrl\(record\.paymentProof\.id, 60\)/.test(proofRoute)],
   ["proof cleanup on failure", /remove\(\[proofPath\]\)/.test(repository)],
   ["booking code retries", /bookingCodeAttempts = 5/.test(repository)],
 ];

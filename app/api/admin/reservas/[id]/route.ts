@@ -1,79 +1,115 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
-import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { bookingRepository } from "@/lib/bookings";
 import {
-  BookingRepositoryError,
-  safeBookingErrorMessage,
-} from "@/lib/bookings/errors";
-import type { BookingStatus } from "@/types/booking";
+  getAdminAccess,
+  requestHasTrustedOrigin,
+} from "@/lib/admin-auth";
+import { getAdminBooking } from "@/lib/admin-bookings";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const allowedStatuses = new Set<BookingStatus>([
-  "approved",
-  "rejected",
-  "cancelled",
+const actionSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("approve"),
+    adminNotes: z.string().trim().max(2000).optional(),
+  }),
+  z.object({
+    action: z.literal("reject"),
+    adminNotes: z.string().trim().max(2000).optional(),
+    reason: z.string().trim().min(3).max(1000),
+  }),
+  z.object({
+    action: z.literal("note"),
+    note: z.string().trim().min(1).max(2000),
+  }),
 ]);
-type AdminStatus = "approved" | "rejected" | "cancelled";
 
-function isAdminStatus(status?: BookingStatus): status is AdminStatus {
-  return Boolean(status && allowedStatuses.has(status) && status !== "pending_review");
+function transitionError(message: string) {
+  if (message.includes("INVALID_STATUS_TRANSITION"))
+    return "La reserva ya no permite esta transición.";
+  if (message.includes("BOOKING_DATE_BLOCKED"))
+    return "La fecha del tour está bloqueada.";
+  if (message.includes("GROUP_CAPACITY_EXCEEDED"))
+    return "Ya no existe capacidad suficiente para aprobar esta reserva.";
+  if (message.includes("GROUP_DATE_UNAVAILABLE"))
+    return "La fecha grupal ya no está disponible.";
+  if (message.includes("PRIVATE_DATE_ALREADY_APPROVED"))
+    return "Ya existe una reserva privada confirmada para esta fecha.";
+  return "No fue posible completar la operación.";
 }
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  if (!requestHasTrustedOrigin(request)) {
+    return NextResponse.json({ error: "Solicitud no permitida." }, { status: 403 });
   }
-  const { status, reason, adminNotes } = (await request.json()) as {
-    adminNotes?: string;
-    reason?: string;
-    status?: BookingStatus;
-  };
-  if (!isAdminStatus(status)) {
-    return NextResponse.json({ error: "Estado no válido." }, { status: 400 });
+
+  const access = await getAdminAccess();
+  if (!access.user) {
+    return NextResponse.json({ error: "Sesión no válida." }, { status: 401 });
   }
-  if ((status === "rejected" || status === "cancelled") && !reason?.trim()) {
-    return NextResponse.json({ error: "El motivo es obligatorio." }, { status: 400 });
+  if (!access.profile) {
+    return NextResponse.json({ error: "Acceso denegado." }, { status: 403 });
   }
+
+  const parsed = actionSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Revisa los datos de la operación." },
+      { status: 400 },
+    );
+  }
+
   const id = (await params).id;
-  const current = await bookingRepository.findById(id);
+  const current = await getAdminBooking(access.supabase, id);
   if (!current) {
     return NextResponse.json({ error: "Reserva no encontrada." }, { status: 404 });
   }
-  const transitionAllowed =
-    (status === "approved" && current.status === "pending_review") ||
-    (status === "rejected" && current.status === "pending_review") ||
-    (status === "cancelled" &&
-      (current.status === "pending_review" || current.status === "approved"));
-  if (!transitionAllowed) {
-    return NextResponse.json(
-      { error: "La reserva no permite ese cambio de estado." },
-      { status: 409 },
-    );
-  }
-  try {
-    const record = await bookingRepository.updateStatus(id, {
-      adminNotes,
-      reason,
-      status,
+
+  const adminClient = createSupabaseAdminClient();
+  if (parsed.data.action === "note") {
+    const { error } = await adminClient.from("admin_actions").insert({
+      action: "note_added",
+      actor_id: access.user.id,
+      booking_id: current.id,
+      new_status: current.status,
+      notes: parsed.data.note,
+      previous_status: current.status,
     });
-    return record
-      ? NextResponse.json({ record })
-      : NextResponse.json({ error: "Reserva no encontrada." }, { status: 404 });
-  } catch (error) {
-    const conflict =
-      error instanceof BookingRepositoryError &&
-      [
-        "date_blocked",
-        "group_capacity_exceeded",
-        "group_date_unavailable",
-        "private_date_unavailable",
-      ].includes(error.code);
-    return NextResponse.json(
-      { error: safeBookingErrorMessage(error) },
-      { status: conflict ? 409 : 500 },
-    );
+    if (error) {
+      return NextResponse.json(
+        { error: "No fue posible guardar la nota." },
+        { status: 500 },
+      );
+    }
+  } else {
+    if (current.status !== "pending_review") {
+      return NextResponse.json(
+        { error: "La reserva ya no está pendiente de revisión." },
+        { status: 409 },
+      );
+    }
+
+    const nextStatus =
+      parsed.data.action === "approve" ? "approved" : "rejected";
+    const { error } = await adminClient.rpc("transition_booking_status", {
+      action_actor_id: access.user.id,
+      action_notes: parsed.data.adminNotes || null,
+      action_reason:
+        parsed.data.action === "reject" ? parsed.data.reason : null,
+      target_booking_id: current.id,
+      target_status: nextStatus,
+    });
+    if (error) {
+      return NextResponse.json(
+        { error: transitionError(error.message) },
+        { status: 409 },
+      );
+    }
   }
+
+  const record = await getAdminBooking(access.supabase, id);
+  return NextResponse.json({ record });
 }

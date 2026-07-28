@@ -1,51 +1,67 @@
 import "server-only";
 
-import { createHmac, timingSafeEqual } from "node:crypto";
-import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 
-export const adminCookieName = "asl_admin_session";
-const sessionLifetimeSeconds = 60 * 60 * 8;
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-function getSecret() {
-  return process.env.ADMIN_SESSION_SECRET ?? "";
+export type AdminProfile = {
+  fullName: string;
+  id: string;
+  isActive: boolean;
+  role: "admin";
+};
+
+export type AdminAccess = {
+  profile: AdminProfile | null;
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+  user: User | null;
+};
+
+export async function getAdminAccess(): Promise<AdminAccess> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { profile: null, supabase, user: null };
+
+  const { data } = await supabase
+    .from("admin_profiles")
+    .select("id, full_name, role, is_active")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const profile =
+    data?.role === "admin" && data.is_active
+      ? {
+          fullName: data.full_name,
+          id: data.id,
+          isActive: true,
+          role: "admin" as const,
+        }
+      : null;
+
+  return { profile, supabase, user };
 }
 
-export function adminAuthIsConfigured() {
-  return Boolean(
-    process.env.NODE_ENV !== "production" &&
-      process.env.ADMIN_PASSWORD &&
-      getSecret().length >= 32,
-  );
-}
-
-function sign(payload: string) {
-  return createHmac("sha256", getSecret()).update(payload).digest("hex");
-}
-
-export function createAdminSession() {
-  const payload = String(Math.floor(Date.now() / 1000) + sessionLifetimeSeconds);
-  return `${payload}.${sign(payload)}`;
-}
-
-export function verifyAdminSession(value?: string) {
-  if (!value || !adminAuthIsConfigured()) return false;
-  const [expires, signature] = value.split(".");
-  if (!expires || !signature || Number(expires) < Date.now() / 1000) return false;
-  const expected = Buffer.from(sign(expires));
-  const actual = Buffer.from(signature);
-  return expected.length === actual.length && timingSafeEqual(expected, actual);
+export async function requireActiveAdmin() {
+  const access = await getAdminAccess();
+  if (!access.user) redirect("/admin/login");
+  if (!access.profile) redirect("/admin/login?denied=1");
+  return {
+    profile: access.profile,
+    supabase: access.supabase,
+    user: access.user,
+  };
 }
 
 export async function isAdminAuthenticated() {
-  return verifyAdminSession((await cookies()).get(adminCookieName)?.value);
+  const { profile, user } = await getAdminAccess();
+  return Boolean(user && profile);
 }
 
-export function passwordMatches(candidate: string) {
-  const expected = Buffer.from(process.env.ADMIN_PASSWORD ?? "");
-  const actual = Buffer.from(candidate);
-  return (
-    adminAuthIsConfigured() &&
-    expected.length === actual.length &&
-    timingSafeEqual(expected, actual)
-  );
+export function requestHasTrustedOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  return !origin || origin === new URL(request.url).origin;
 }

@@ -1,35 +1,49 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
-import {
-  adminAuthIsConfigured,
-  adminCookieName,
-  createAdminSession,
-  passwordMatches,
-} from "@/lib/admin-auth";
+import { requestHasTrustedOrigin } from "@/lib/admin-auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+const loginSchema = z.object({
+  email: z.string().trim().email().max(254),
+  password: z.string().min(1).max(256),
+});
 
 export async function POST(request: Request) {
-  const { password } = (await request.json()) as { password?: string };
-  if (!adminAuthIsConfigured()) {
+  if (!requestHasTrustedOrigin(request)) {
+    return NextResponse.json({ error: "Solicitud no permitida." }, { status: 403 });
+  }
+
+  const parsed = loginSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
     return NextResponse.json(
-      {
-        error:
-          process.env.NODE_ENV === "production"
-            ? "El acceso administrativo de producción se habilitará con autenticación real en la Etapa 3."
-            : "Configura ADMIN_PASSWORD y ADMIN_SESSION_SECRET en .env.local.",
-      },
-      { status: 503 },
+      { error: "Ingresa un correo y una contraseña válidos." },
+      { status: 400 },
     );
   }
-  if (!password || !passwordMatches(password)) {
-    return NextResponse.json({ error: "Credenciales incorrectas." }, { status: 401 });
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
+  if (error || !data.user) {
+    return NextResponse.json(
+      { error: "Correo o contraseña incorrectos." },
+      { status: 401 },
+    );
   }
-  const response = NextResponse.json({ ok: true });
-  response.cookies.set(adminCookieName, createAdminSession(), {
-    httpOnly: true,
-    maxAge: 60 * 60 * 8,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-  });
-  return response;
+
+  const { data: profile } = await supabase
+    .from("admin_profiles")
+    .select("role, is_active")
+    .eq("id", data.user.id)
+    .maybeSingle();
+
+  if (profile?.role !== "admin" || !profile.is_active) {
+    await supabase.auth.signOut();
+    return NextResponse.json(
+      { error: "Esta cuenta no tiene acceso administrativo activo." },
+      { status: 403 },
+    );
+  }
+
+  return NextResponse.json({ ok: true });
 }
