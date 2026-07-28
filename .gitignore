@@ -31,3 +31,6 @@ next-env.d.ts
 
 # Datos privados del repositorio local de demostración
 /.data/
+
+# Supabase CLI local link metadata
+/supabase/.temp/
