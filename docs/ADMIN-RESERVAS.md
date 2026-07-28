@@ -1,42 +1,53 @@
-# Reservas de Ciudad Esmeralda — modo local
+# Panel administrativo de reservas
 
-Esta implementación es una primera versión funcional de demostración. No está
-lista para producción.
+El panel usa Supabase Auth con correo y contraseña. No existe registro público
+ni una contraseña compartida. Toda cuenta debe tener una fila activa en
+`public.admin_profiles`.
 
-## Acceso
+## Rutas
 
-1. Copiar las variables de `.env.example` a `.env.local`.
-2. Definir `ADMIN_PASSWORD`.
-3. Definir `ADMIN_SESSION_SECRET` con un secreto aleatorio de al menos 32
-   caracteres.
-4. Reiniciar el servidor y abrir `/admin/reservas`.
+- `/admin/login`: inicio de sesión.
+- `/admin`: indicadores operativos.
+- `/admin/reservas`: listado y filtros.
+- `/admin/reservas/[id]`: detalle, comprobante y acciones.
 
-La ruta redirige a `/admin/login` sin una sesión válida. La sesión se guarda en
-una cookie `HttpOnly`, `SameSite=Strict`, firmada y con duración de ocho horas.
-Las APIs administrativas y el acceso a comprobantes vuelven a validar esa
-sesión en el servidor.
+Las páginas y APIs administrativas vuelven a validar en servidor tanto la
+sesión de Supabase Auth como el perfil activo. El middleware se limita a
+refrescar las cookies de sesión para las rutas administrativas.
 
-## Persistencia actual
+## Acceso a datos
 
-`LocalBookingRepository` guarda las reservas en
-`.data/bookings/reservations.json` y los comprobantes, sin extensión ni URL
-pública, en `.data/bookings/proofs/`. La carpeta completa está ignorada por Git.
-El navegador conserva únicamente el borrador del formulario en `localStorage`;
-las reservas enviadas no se administran desde `localStorage`.
+Las lecturas de `bookings`, `buyers`, `booking_participants`, `admin_actions` y
+`tour_dates` utilizan el cliente SSR con el token del usuario. Por tanto, pasan
+por las políticas RLS y `public.is_active_admin()`.
 
-El punto de composición `lib/bookings/index.ts` permite sustituir este
-repositorio por uno de Supabase sin cambiar el formulario ni el panel.
+Las operaciones privilegiadas quedan exclusivamente en servidor:
 
-## Fechas
+- aprobar o rechazar llama `transition_booking_status` con service role después
+  de validar la sesión, el perfil activo y la transición solicitada;
+- el UUID de Auth se registra como `actor_id`;
+- una nota crea una entrada `note_added` en `admin_actions`;
+- el comprobante usa una URL firmada de 60 segundos en el bucket privado
+  `booking-payment-proofs`.
 
-Las fechas se editan en `availableDates`, dentro de `lib/booking-config.ts`.
-Las fechas incluidas actualmente son datos temporales de demostración y están
-marcadas con `temporary: true`.
+La service role nunca se incluye en Client Components ni respuestas.
 
-## Antes de producción
+## Crear el primer administrador
 
-Se necesita autenticación administrada, base de datos transaccional,
-almacenamiento privado de comprobantes, reglas de acceso/RLS, respaldo,
-protección contra abuso y un aviso de privacidad y tratamiento de datos. Los
-datos médicos y personales requieren revisión específica de seguridad,
-retención, consentimiento y acceso.
+1. En Supabase Dashboard, abrir **Authentication → Users**.
+2. Crear manualmente el usuario con su correo real y una contraseña segura.
+   No habilitar una interfaz pública de registro.
+3. Copiar el UUID del usuario recién creado.
+4. Abrir **SQL Editor** con acceso de propietario y ejecutar, sustituyendo los
+   marcadores por valores reales:
+
+```sql
+insert into public.admin_profiles (id, full_name, role, is_active)
+values ('<AUTH_USER_UUID>', '<NOMBRE_COMPLETO>', 'admin', true);
+```
+
+5. Confirmar que la fila tiene `is_active = true`.
+6. Abrir `/admin/login` e iniciar sesión.
+
+No usar la service role en el navegador, no compartir credenciales y no crear
+una ruta que inserte perfiles administrativos automáticamente.

@@ -121,9 +121,8 @@ Comprobaciones recomendadas desde un cliente configurado solo con anon key:
 - La URL pública convencional del archivo no debe funcionar.
 
 La service role omite RLS y por eso nunca puede llegar a un Client Component.
-Las políticas quedan preparadas para Supabase Auth. La interfaz todavía mantiene
-el acceso administrativo temporal de desarrollo hasta completar la
-autenticación de la siguiente fase.
+El panel usa Supabase Auth y exige una fila activa en `admin_profiles`. Sus
+lecturas se hacen con la sesión del usuario y pasan por RLS.
 
 ## Crear el primer perfil administrativo
 
@@ -193,14 +192,14 @@ proyecto de desarrollo, nunca directamente contra producción.
 
 En desarrollo:
 
-1. configurar Supabase y las variables administrativas locales;
+1. configurar las variables de Supabase;
 2. ejecutar `npm run dev`;
 3. abrir `/admin/login`;
 4. acceder a `/admin/reservas`.
 
-El método de contraseña compartida está deliberadamente desactivado en
-producción. Hasta implementar autenticación real en la Etapa 3, la ruta
-administrativa de producción permanece bloqueada server-side.
+No existe registro público de administradores. La sesión se mantiene con
+cookies de Supabase Auth y se valida junto con `admin_profiles` en todas las
+rutas privadas.
 
 El panel lee comprador, participantes, estado, historial, modalidad, fecha,
 total y comprobante firmado. Aprobar, rechazar y cancelar llaman funciones
@@ -241,12 +240,11 @@ de confirmar que no deben conservarse.
 - Comprobar estado de migrations con `npx supabase migration list`.
 - Mantener respaldos y probar restauración antes de producción.
 
-## Pendiente para la Etapa 3
+## Pendiente para etapas posteriores
 
-- Integrar la sesión de Supabase Auth con las rutas administrativas.
-- Registro de `actor_id` desde la sesión autenticada.
 - Protección adicional contra abuso y rate limiting.
 - Revisión legal de consentimiento, privacidad y retención.
 - Generación de tipos tras enlazar el proyecto.
+- Envío de notificaciones y sincronización de calendario.
 
 Resend, Google Calendar, Canva y Vercel no forman parte de esta configuración.
