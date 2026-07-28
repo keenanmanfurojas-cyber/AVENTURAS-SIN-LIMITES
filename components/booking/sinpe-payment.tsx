@@ -49,7 +49,7 @@ export function SinpePayment({
             {sinpeNumber}
           </p>
           <button
-            className="mt-4 rounded-full border border-[#b9ff4a]/30 px-4 py-2 text-xs font-semibold text-[#b9ff4a]"
+            className="mt-4 min-h-12 w-full rounded-full border border-[#b9ff4a]/30 px-6 py-3 text-xs font-semibold text-[#b9ff4a] outline-none transition hover:border-[#b9ff4a]/60 focus-visible:ring-2 focus-visible:ring-[#b9ff4a]/25 sm:w-auto"
             onClick={() => copy(sinpeNumber)}
             type="button"
           >
@@ -81,7 +81,7 @@ export function SinpePayment({
       </div>
 
       <label
-        className={`mt-5 block cursor-pointer rounded-[1.5rem] border border-dashed p-6 text-center transition ${
+        className={`mt-5 flex min-h-[96px] cursor-pointer flex-col items-center justify-center rounded-[1.5rem] border border-dashed p-6 text-center outline-none transition focus-within:ring-2 focus-within:ring-[#b9ff4a]/25 ${
           errors.receipt
             ? "border-red-400/60 bg-red-400/[0.04]"
             : "border-[#b9ff4a]/25 bg-white/[0.02] hover:border-[#b9ff4a]/50"
@@ -121,7 +121,7 @@ export function SinpePayment({
           <div className="mt-3 flex items-center justify-between gap-4 text-xs text-stone-500">
             <span className="truncate">{receipt.name}</span>
             <button
-              className="shrink-0 text-stone-300 underline underline-offset-4"
+              className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-stone-200 underline underline-offset-4 outline-none transition hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-[#b9ff4a]/30"
               onClick={() => onReceiptChange(null)}
               type="button"
             >

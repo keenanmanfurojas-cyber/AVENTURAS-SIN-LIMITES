@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { formatBookingDate, parseBookingDate } from "@/lib/booking-date";
 import type {
   AvailableDate,
   BookingErrors,
@@ -16,20 +17,6 @@ const statusLabels = {
   sold_out: "Agotado",
 } as const;
 
-const monthNames = [
-  "enero",
-  "febrero",
-  "marzo",
-  "abril",
-  "mayo",
-  "junio",
-  "julio",
-  "agosto",
-  "septiembre",
-  "octubre",
-  "noviembre",
-  "diciembre",
-] as const;
 const weekdayNames = [
   "domingo",
   "lunes",
@@ -39,16 +26,6 @@ const weekdayNames = [
   "viernes",
   "sábado",
 ] as const;
-
-function parseBookingDate(date: string) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-  if (!match) return null;
-  return {
-    day: Number(match[3]),
-    month: Number(match[2]),
-    year: Number(match[1]),
-  };
-}
 
 function formatBookingWeekday(date: string) {
   const parts = parseBookingDate(date);
@@ -64,13 +41,6 @@ function formatBookingWeekday(date: string) {
       parts.day) %
     7;
   return weekdayNames[weekday];
-}
-
-export function formatBookingDate(date: string) {
-  if (!date) return "Pendiente";
-  const parts = parseBookingDate(date);
-  if (!parts || !monthNames[parts.month - 1]) return date;
-  return `${parts.day} de ${monthNames[parts.month - 1]} de ${parts.year}`;
 }
 
 export function BookingDateSelector({
@@ -181,7 +151,7 @@ export function BookingDateSelector({
             Fecha privada
           </label>
           <input
-            className="mt-3 min-h-12 w-full rounded-full border border-white/10 bg-black/25 px-5 text-white"
+            className="mt-3 min-h-[52px] w-full rounded-full border border-white/10 bg-black/25 px-5 text-white outline-none transition focus:border-[#b9ff4a]/60 focus:ring-2 focus:ring-[#b9ff4a]/20 sm:min-h-12"
             id="private-tour-date"
             onChange={(event) => onChange(event.target.value)}
             type="date"
@@ -233,7 +203,7 @@ export function BookingDateSelector({
           return (
             <button
               aria-pressed={selected}
-              className={`rounded-[1.6rem] border p-5 text-left transition disabled:opacity-100 ${
+              className={`min-h-[52px] rounded-[1.6rem] border p-5 text-left outline-none transition focus-visible:border-[#b9ff4a]/70 focus-visible:ring-2 focus-visible:ring-[#b9ff4a]/25 disabled:opacity-100 ${
                 selected
                   ? "border-[#b9ff4a]/70 bg-[#b9ff4a]/[0.11] shadow-[0_15px_45px_rgba(185,255,74,0.08)]"
                   : disabled

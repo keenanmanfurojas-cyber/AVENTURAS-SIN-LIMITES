@@ -8,4 +8,4 @@ export const bookingErrorClass =
   "mt-2 font-[family-name:var(--font-poppins)] text-xs font-medium text-red-400";
 
 export const bookingChoiceClass =
-  "rounded-2xl border border-white/10 bg-white/[0.025] p-4 transition hover:border-[#b9ff4a]/30";
+  "min-h-[52px] rounded-2xl border border-white/10 bg-white/[0.025] p-4 transition hover:border-[#b9ff4a]/30 focus-within:border-[#b9ff4a]/60 focus-within:ring-2 focus-within:ring-[#b9ff4a]/20";

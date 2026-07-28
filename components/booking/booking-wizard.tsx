@@ -412,12 +412,12 @@ export function BookingWizard({
             Crearemos un formulario individual para cada participante.
           </p>
           <div
-            className="mt-8 inline-flex items-center gap-6 rounded-full border border-[#b9ff4a]/20 bg-[#b9ff4a]/[0.045] p-2"
+            className="mt-8 inline-flex items-center gap-5 rounded-full border border-[#b9ff4a]/20 bg-[#b9ff4a]/[0.045] p-2 sm:gap-6"
             data-error={Boolean(errors.participantCount)}
           >
             <button
               aria-label="Restar una persona"
-              className="grid size-12 place-items-center rounded-full border border-white/10 bg-black/25 text-2xl text-white transition hover:border-[#b9ff4a]/40"
+              className="grid size-[52px] place-items-center rounded-full border border-white/10 bg-black/25 text-2xl text-white outline-none transition hover:border-[#b9ff4a]/40 focus-visible:border-[#b9ff4a]/70 focus-visible:ring-2 focus-visible:ring-[#b9ff4a]/25 sm:size-12"
               onClick={() => changeParticipantCount(-1)}
               type="button"
             >
@@ -428,7 +428,7 @@ export function BookingWizard({
             </strong>
             <button
               aria-label="Agregar una persona"
-              className="grid size-12 place-items-center rounded-full border border-white/10 bg-black/25 text-2xl text-white transition hover:border-[#b9ff4a]/40"
+              className="grid size-[52px] place-items-center rounded-full border border-white/10 bg-black/25 text-2xl text-white outline-none transition hover:border-[#b9ff4a]/40 focus-visible:border-[#b9ff4a]/70 focus-visible:ring-2 focus-visible:ring-[#b9ff4a]/25 sm:size-12"
               onClick={() => changeParticipantCount(1)}
               type="button"
             >
@@ -602,7 +602,7 @@ export function BookingWizard({
           una validación automática del pago.
         </p>
         <label
-          className={`mt-7 flex cursor-pointer items-start gap-4 rounded-[1.5rem] border p-5 ${
+          className={`mt-7 flex min-h-[52px] cursor-pointer items-start gap-4 rounded-[1.5rem] border p-5 transition focus-within:ring-2 focus-within:ring-[#b9ff4a]/20 ${
             errors.termsAccepted
               ? "border-red-400/60 bg-red-400/[0.04]"
               : "border-[#b9ff4a]/20 bg-[#b9ff4a]/[0.035]"
@@ -667,9 +667,9 @@ export function BookingWizard({
                 <div className="motion-fade-up mt-9" key={step}>
                   {stepContent}
                 </div>
-                <div className="mt-9 flex flex-col-reverse gap-3 border-t border-white/10 pt-6 sm:flex-row sm:justify-between">
+                <div className="mt-9 flex flex-col-reverse gap-4 border-t border-white/10 pt-6 sm:flex-row sm:justify-between sm:gap-3">
                   <button
-                    className="min-h-13 rounded-full border border-white/15 px-6 text-xs font-semibold uppercase tracking-[0.14em] text-stone-300 transition hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-30"
+                    className="min-h-[52px] w-full rounded-full border border-white/20 px-7 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-stone-200 outline-none transition hover:border-white/40 focus-visible:border-white/50 focus-visible:ring-2 focus-visible:ring-white/40 disabled:cursor-not-allowed disabled:opacity-30 sm:min-h-13 sm:w-auto sm:px-6"
                     disabled={step === 0}
                     onClick={() => {
                       setErrors({});
@@ -683,7 +683,7 @@ export function BookingWizard({
                     Anterior
                   </button>
                   <button
-                    className="min-h-13 rounded-full bg-[#b9ff4a] px-7 text-xs font-bold uppercase tracking-[0.14em] text-black shadow-[0_14px_40px_rgba(185,255,74,0.14)] transition hover:-translate-y-0.5 hover:bg-[#cbff7a]"
+                    className="min-h-[52px] w-full rounded-full bg-[#b9ff4a] px-8 py-3 text-xs font-bold uppercase tracking-[0.14em] text-black shadow-[0_14px_40px_rgba(185,255,74,0.14)] outline-none transition hover:-translate-y-0.5 hover:bg-[#cbff7a] focus-visible:ring-2 focus-visible:ring-[#b9ff4a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#080a08] disabled:cursor-wait disabled:opacity-70 sm:min-h-13 sm:w-auto sm:px-7"
                     disabled={submitting}
                     onClick={step === 7 ? submit : next}
                     type="button"

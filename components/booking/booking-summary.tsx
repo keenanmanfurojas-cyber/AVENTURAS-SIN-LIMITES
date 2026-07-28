@@ -5,7 +5,7 @@ import {
 } from "@/lib/booking-utils";
 import { formatCrc } from "@/lib/tour-utils";
 import type { BookingConfig, BookingDraft } from "@/types/booking";
-import { formatBookingDate } from "@/components/booking/booking-date-selector";
+import { formatBookingDate } from "@/lib/booking-date";
 
 type BookingSummaryProps = Readonly<{
   completedSteps: number;
@@ -116,7 +116,7 @@ export function BookingSummary(props: BookingSummaryProps) {
   if (variant === "mobile") {
     return (
       <details className="group mb-5 rounded-[1.75rem] border border-[#b9ff4a]/15 bg-white/[0.035] p-5 backdrop-blur-xl lg:hidden">
-        <summary className="flex cursor-pointer list-none items-center justify-between font-[family-name:var(--font-manrope)] font-bold text-white [&::-webkit-details-marker]:hidden">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between rounded-xl font-[family-name:var(--font-manrope)] font-bold text-white outline-none focus-visible:ring-2 focus-visible:ring-[#b9ff4a]/30 [&::-webkit-details-marker]:hidden">
           Ver resumen
           <span className="text-[#b9ff4a] transition-transform group-open:rotate-45">
             +

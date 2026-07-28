@@ -70,7 +70,7 @@ export function BuyerForm({ buyer, errors, onChange }: BuyerFormProps) {
           ) : null}
         </label>
       </div>
-      <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+      <label className="mt-6 flex min-h-[52px] cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-4 transition focus-within:border-[#b9ff4a]/60 focus-within:ring-2 focus-within:ring-[#b9ff4a]/20">
         <input
           checked={buyer.isParticipant}
           className="mt-1 size-4 accent-[#b9ff4a]"

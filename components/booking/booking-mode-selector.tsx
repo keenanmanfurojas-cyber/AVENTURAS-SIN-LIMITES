@@ -28,7 +28,7 @@ export function BookingModeSelector({
           const selected = option.id === mode;
           return (
             <label
-              className={`cursor-pointer rounded-[1.5rem] border p-5 transition sm:p-6 ${
+              className={`min-h-[52px] cursor-pointer rounded-[1.5rem] border p-5 transition focus-within:ring-2 focus-within:ring-[#b9ff4a]/25 sm:p-6 ${
                 selected
                   ? "border-[#b9ff4a]/60 bg-[#b9ff4a]/[0.07] shadow-[0_18px_55px_rgba(0,0,0,0.2)]"
                   : "border-white/10 bg-white/[0.025] hover:border-[#b9ff4a]/25"
