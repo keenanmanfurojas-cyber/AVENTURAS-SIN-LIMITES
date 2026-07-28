@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AdminIcon } from "@/components/admin/admin-icon";
 
 export function AdminLoginForm() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -13,41 +15,73 @@ export function AdminLoginForm() {
     event.preventDefault();
     setLoading(true);
     setError("");
-    const response = await fetch("/api/admin/login", {
-      body: JSON.stringify({ password }),
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-    });
-    const result = (await response.json()) as { error?: string };
-    setLoading(false);
-    if (!response.ok) {
-      setError(result.error ?? "No fue posible iniciar sesión.");
-      return;
+    try {
+      const response = await fetch("/api/admin/login", {
+        body: JSON.stringify({ email, password }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setError(result.error ?? "No fue posible iniciar sesión.");
+        return;
+      }
+      router.replace("/admin");
+      router.refresh();
+    } catch {
+      setError("No fue posible conectar con el sistema.");
+    } finally {
+      setLoading(false);
     }
-    router.replace("/admin/reservas");
-    router.refresh();
   };
 
   return (
-    <form className="mt-7" onSubmit={submit}>
-      <label className="block text-sm font-medium text-stone-300">
+    <form className="mt-7 space-y-5" onSubmit={submit}>
+      <label className="block text-xs font-bold text-stone-300">
+        Correo electrónico
+        <span className="relative mt-2 block">
+          <AdminIcon className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-stone-500" name="mail" />
+          <input
+          autoComplete="username"
+          className="admin-control w-full rounded-xl pl-12 pr-4 outline-none"
+          inputMode="email"
+          onChange={(event) => setEmail(event.target.value)}
+          required
+          type="email"
+          value={email}
+          />
+        </span>
+      </label>
+      <label className="block text-xs font-bold text-stone-300">
         Contraseña
-        <input
+        <span className="relative mt-2 block">
+          <AdminIcon className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-stone-500" name="lock" />
+          <input
           autoComplete="current-password"
-          className="mt-2 min-h-12 w-full rounded-full border border-white/15 bg-black/25 px-5 text-white outline-none focus:border-[#b9ff4a]/60"
+          className="admin-control w-full rounded-xl pl-12 pr-4 outline-none"
           onChange={(event) => setPassword(event.target.value)}
           required
           type="password"
           value={password}
-        />
+          />
+        </span>
       </label>
-      {error ? <p className="mt-3 text-sm text-red-400">{error}</p> : null}
+      {error ? (
+        <p
+          className="rounded-2xl border border-red-300/20 bg-red-300/[0.07] p-4 text-sm text-red-200"
+          role="alert"
+        >
+          {error}
+        </p>
+      ) : null}
       <button
-        className="mt-5 min-h-12 w-full rounded-full bg-[#b9ff4a] px-6 text-xs font-bold uppercase tracking-[0.14em] text-black"
+        aria-busy={loading}
+        className="admin-action flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-[#b9ff4a] px-7 py-3 text-xs font-extrabold uppercase tracking-[0.14em] text-[#071006] outline-none transition hover:bg-[#d0ff87] focus-visible:ring-2 focus-visible:ring-[#b9ff4a] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070907] disabled:cursor-wait disabled:opacity-70"
         disabled={loading}
         type="submit"
       >
-        {loading ? "Ingresando…" : "Entrar al panel"}
+        {loading ? "Verificando acceso…" : "Entrar al panel"}
+        {!loading ? <AdminIcon className="size-4" name="arrow" /> : null}
       </button>
     </form>
   );

@@ -162,6 +162,94 @@ button:disabled,
   }
 }
 
+/* Admin visual system: intentionally sans-serif and isolated from the public UI. */
+.admin-ui {
+  --admin-lime: #b9ff4a;
+  --admin-panel: rgba(18, 23, 19, 0.78);
+  --admin-line: rgba(255, 255, 255, 0.1);
+  --admin-muted: #9da59d;
+  background-color: #070a08;
+  color: #f5f7f4;
+  font-family: var(--font-manrope), "Avenir Next", "Helvetica Neue", Arial,
+    sans-serif;
+}
+
+.admin-ui :where(h1, h2, h3, h4, p, input, select, textarea, button, a, dt, dd) {
+  font-family: inherit;
+}
+
+.admin-atmosphere {
+  background-image:
+    radial-gradient(circle at 8% 0%, rgba(185, 255, 74, 0.1), transparent 25rem),
+    radial-gradient(circle at 96% 18%, rgba(81, 128, 89, 0.08), transparent 30rem),
+    linear-gradient(rgba(185, 255, 74, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(185, 255, 74, 0.025) 1px, transparent 1px);
+  background-size: auto, auto, 72px 72px, 72px 72px;
+}
+
+.admin-atmosphere::before {
+  background:
+    repeating-radial-gradient(
+      ellipse at 10% 10%,
+      transparent 0 34px,
+      rgba(185, 255, 74, 0.035) 35px 36px
+    );
+  content: "";
+  inset: 0;
+  mask-image: linear-gradient(to bottom right, black, transparent 52%);
+  pointer-events: none;
+  position: fixed;
+}
+
+.admin-panel {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 42%),
+    var(--admin-panel);
+  border: 1px solid var(--admin-line);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.admin-control {
+  appearance: none;
+  background-color: rgba(4, 7, 5, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f5f7f4;
+  min-height: 52px;
+}
+
+.admin-control:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.admin-control:focus {
+  border-color: rgba(185, 255, 74, 0.65);
+  box-shadow: 0 0 0 3px rgba(185, 255, 74, 0.11);
+}
+
+.admin-action {
+  box-shadow: 0 10px 32px rgba(185, 255, 74, 0.12);
+}
+
+.admin-action:hover {
+  box-shadow: 0 14px 38px rgba(185, 255, 74, 0.2);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-ui *,
+  .admin-ui *::before,
+  .admin-ui *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .type-display {
   font-family: var(--font-display);
   font-size: clamp(4rem, 10vw, 9rem);
