@@ -12,7 +12,7 @@ import {
 } from "@/lib/bookings/errors";
 import {
   bookingDraftSchema,
-  paymentProofIsValid,
+  validatePaymentProof,
 } from "@/lib/bookings/validation";
 import type { BookingRecord } from "@/types/booking";
 import {
@@ -38,19 +38,37 @@ function getHoldHours() {
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return NextResponse.json(
+        {
+          code: "INVALID_REQUEST_BODY",
+          error: "No pudimos leer la solicitud. Revisa el comprobante.",
+        },
+        { status: 400 },
+      );
+    }
     const proof = formData.get("paymentProof");
     const rawDraft = formData.get("draft");
     if (!(proof instanceof File) || typeof rawDraft !== "string") {
       return NextResponse.json({ error: "Solicitud incompleta." }, { status: 400 });
     }
-    if (!(await paymentProofIsValid(proof))) {
+    const proofError = await validatePaymentProof(proof);
+    if (proofError) {
+      const tooLarge = proofError === "too_large";
       return NextResponse.json(
         {
+          code: tooLarge
+            ? "PAYMENT_PROOF_TOO_LARGE"
+            : "PAYMENT_PROOF_INVALID",
           error:
-            "El comprobante debe ser PNG, JPG, JPEG o WEBP y pesar máximo 5 MB.",
+            tooLarge
+              ? "El comprobante supera el tamaño permitido. Usa una captura más liviana."
+              : "El comprobante debe ser una imagen PNG, JPG, JPEG o WEBP válida.",
         },
-        { status: 400 },
+        { status: tooLarge ? 413 : 400 },
       );
     }
     let draftInput: unknown;

@@ -38,6 +38,10 @@ const notificationDelivery = await readFile(
   "lib/notifications/delivery.ts",
   "utf8",
 );
+const proofConstraints = await readFile(
+  "lib/payment-proof-constraints.ts",
+  "utf8",
+);
 
 const checks = [
   ["ten domain tables", (allMigrations.match(/create table public\./g) ?? []).length === 10],
@@ -61,7 +65,8 @@ const checks = [
   ["explicit admin policies", (adminMigration.match(/create policy/g) ?? []).length >= 10],
   ["no public reservation policy", !/to anon/.test(adminMigration)],
   ["private bucket", /'booking-payment-proofs'/.test(migration) && /false,\n  5242880/.test(migration)],
-  ["5 MB server limit", /5 \* 1024 \* 1024/.test(validation)],
+  ["1.5 MB server proof limit", /1\.5 \* 1024 \* 1024/.test(proofConstraints)],
+  ["3 MB original proof limit", /3 \* 1024 \* 1024/.test(proofConstraints)],
   ["file signature validation", /bytes\[0\] === 255/.test(validation) && /WEBP/.test(validation)],
   ["signed URL is short", /signedUrlLifetimeSeconds = 60/.test(repository)],
   ["service role server-only", /import \"server-only\"/.test(adminClient)],

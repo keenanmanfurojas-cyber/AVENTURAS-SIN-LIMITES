@@ -7,7 +7,7 @@ import type { BookingErrors } from "@/types/booking";
 
 type SinpePaymentProps = Readonly<{
   errors: BookingErrors;
-  onReceiptChange: (file: File | null) => void;
+  onReceiptChange: (file: File | null) => Promise<void> | void;
   previewUrl: string;
   receipt: File | null;
   sinpeAccountHolder: string;
@@ -31,6 +31,8 @@ export function SinpePayment({
   const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
     onReceiptChange(event.target.files?.[0] ?? null);
   };
+  const receiptSize =
+    receipt && `${(receipt.size / (1024 * 1024)).toFixed(2)} MB`;
 
   return (
     <div>
@@ -99,7 +101,7 @@ export function SinpePayment({
           Subir comprobante
         </span>
         <span className="mt-2 block text-xs text-stone-500">
-          PNG, JPG, JPEG o WEBP · optimización automática
+          PNG, JPG, JPEG o WEBP · máximo 3 MB · optimización automática
         </span>
       </label>
       {errors.receipt ? (
@@ -107,7 +109,10 @@ export function SinpePayment({
       ) : null}
 
       {receipt && previewUrl ? (
-        <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+        <div
+          className="mt-5 overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/20 p-4"
+          data-receipt-size={receipt.size}
+        >
           <div className="relative h-64 overflow-hidden rounded-xl">
             <Image
               alt="Previsualización del comprobante SINPE"
@@ -119,7 +124,9 @@ export function SinpePayment({
             />
           </div>
           <div className="mt-3 flex items-center justify-between gap-4 text-xs text-stone-500">
-            <span className="truncate">{receipt.name}</span>
+            <span className="truncate">
+              {receipt.name} · {receiptSize}
+            </span>
             <button
               className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-stone-200 underline underline-offset-4 outline-none transition hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-[#b9ff4a]/30"
               onClick={() => onReceiptChange(null)}

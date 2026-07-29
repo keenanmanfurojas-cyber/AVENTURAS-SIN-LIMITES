@@ -30,6 +30,12 @@ import {
   normalizePhoneToE164,
   phoneCountryOptions,
 } from "@/lib/contact-validation";
+import {
+  maximumFinalPaymentProofBytes,
+  maximumOriginalPaymentProofBytes,
+  paymentProofTypeIsAccepted,
+} from "@/lib/payment-proof-constraints";
+import { optimizePaymentProof } from "@/lib/payment-proof-image";
 import type {
   BookingBuyer,
   BookingConfig,
@@ -38,43 +44,6 @@ import type {
   BookingMode,
   BookingParticipant,
 } from "@/types/booking";
-
-const receiptTypes = ["image/png", "image/jpeg", "image/webp"];
-const receiptOptimizationThreshold = 3 * 1024 * 1024;
-const maximumReceiptBytes = 5 * 1024 * 1024;
-
-async function optimizeReceipt(file: File) {
-  if (file.size <= receiptOptimizationThreshold) return file;
-
-  try {
-    const bitmap = await createImageBitmap(file);
-    const maxDimension = 1800;
-    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-    const context = canvas.getContext("2d");
-    if (!context) {
-      bitmap.close();
-      return file;
-    }
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    bitmap.close();
-    const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", 0.82),
-    );
-    if (!blob) return file;
-    const baseName = file.name.replace(/\.[^.]+$/, "");
-    return new File([blob], `${baseName}-optimizado.jpg`, {
-      type: "image/jpeg",
-      lastModified: Date.now(),
-    });
-  } catch {
-    return file;
-  }
-}
 
 function scrollToFirstError() {
   window.requestAnimationFrame(() => {
@@ -312,17 +281,32 @@ export function BookingWizard({
       setErrors({});
       return;
     }
-    if (!receiptTypes.includes(file.type)) {
+    if (!paymentProofTypeIsAccepted(file.type)) {
       setReceipt(null);
       setErrors({ receipt: "Usa un archivo PNG, JPG, JPEG o WEBP." });
       scrollToFirstError();
       return;
     }
-    const optimized = await optimizeReceipt(file);
-    if (optimized.size > maximumReceiptBytes) {
+    if (file.size > maximumOriginalPaymentProofBytes) {
       setReceipt(null);
       setErrors({
-        receipt: "El comprobante debe pesar máximo 5 MB.",
+        receipt:
+          "El comprobante es demasiado pesado. Sube una captura de pantalla o una imagen menor de 3 MB.",
+      });
+      scrollToFirstError();
+      return;
+    }
+    let optimized: File | null = null;
+    try {
+      optimized = await optimizePaymentProof(file);
+    } catch {
+      optimized = null;
+    }
+    if (!optimized || optimized.size > maximumFinalPaymentProofBytes) {
+      setReceipt(null);
+      setErrors({
+        receipt:
+          "No pudimos optimizar el comprobante. Sube una captura de pantalla más liviana.",
       });
       scrollToFirstError();
       return;
@@ -369,6 +353,18 @@ export function BookingWizard({
     }
 
     if (!receipt || !draft.mode || total === null || !currentMode) return;
+    if (
+      !paymentProofTypeIsAccepted(receipt.type) ||
+      receipt.size > maximumFinalPaymentProofBytes
+    ) {
+      setStep(6);
+      setErrors({
+        receipt:
+          "El comprobante supera el tamaño permitido. Usa una captura más liviana.",
+      });
+      scrollToFirstError();
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -376,13 +372,23 @@ export function BookingWizard({
       body.set("draft", JSON.stringify(draft));
       body.set("paymentProof", receipt);
       const response = await fetch("/api/reservas", { body, method: "POST" });
-      const payload = (await response.json()) as {
+      if (response.status === 413) {
+        setErrors({
+          submit:
+            "El comprobante supera el tamaño permitido. Usa una captura más liviana.",
+        });
+        return;
+      }
+      const payload = (await response.json().catch(() => null)) as {
+        code?: string;
         error?: string;
         lookupToken?: string;
         reservation?: { bookingCode: string };
-      };
-      if (!response.ok || !payload.reservation) {
-        setErrors({ submit: payload.error ?? "No pudimos enviar la solicitud." });
+      } | null;
+      if (!response.ok || !payload?.reservation) {
+        setErrors({
+          submit: payload?.error ?? "No pudimos enviar la solicitud.",
+        });
         return;
       }
       window.localStorage.removeItem(config.storageKey);
