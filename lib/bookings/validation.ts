@@ -4,6 +4,10 @@ import {
   normalizePhoneToE164,
   phoneIsValid,
 } from "@/lib/contact-validation";
+import {
+  maximumFinalPaymentProofBytes,
+  paymentProofTypeIsAccepted,
+} from "@/lib/payment-proof-constraints";
 
 const yesNoSchema = z.enum(["", "no", "yes"]);
 
@@ -99,34 +103,46 @@ export const bookingDraftSchema = z
     }
   });
 
-export const acceptedPaymentProofTypes = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-]);
+export type PaymentProofValidationError =
+  | "empty"
+  | "invalid_signature"
+  | "invalid_type"
+  | "too_large";
 
-export const maximumPaymentProofBytes = 5 * 1024 * 1024;
-
-export async function paymentProofIsValid(file: File) {
+export async function validatePaymentProof(
+  file: File,
+): Promise<PaymentProofValidationError | null> {
+  if (!paymentProofTypeIsAccepted(file.type)) return "invalid_type";
+  if (file.size === 0) return "empty";
+  if (file.size > maximumFinalPaymentProofBytes) return "too_large";
   if (
-    file.size === 0 ||
-    file.size > maximumPaymentProofBytes ||
-    !acceptedPaymentProofTypes.has(file.type)
+    file.size < 12 &&
+    file.type !== "image/jpeg"
   ) {
-    return false;
+    return "invalid_signature";
   }
 
   const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
   if (file.type === "image/png") {
     return [137, 80, 78, 71, 13, 10, 26, 10].every(
       (value, index) => bytes[index] === value,
-    );
+    )
+      ? null
+      : "invalid_signature";
   }
   if (file.type === "image/jpeg") {
-    return bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
+    return bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255
+      ? null
+      : "invalid_signature";
   }
   return (
     String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
     String.fromCharCode(...bytes.slice(8, 12)) === "WEBP"
-  );
+  )
+    ? null
+    : "invalid_signature";
+}
+
+export async function paymentProofIsValid(file: File) {
+  return (await validatePaymentProof(file)) === null;
 }
