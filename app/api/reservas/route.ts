@@ -21,6 +21,10 @@ import {
 } from "@/lib/contact-validation";
 import { createBookingLookupToken } from "@/lib/booking-lookup-token";
 import { deliverBookingNotificationSafely } from "@/lib/notifications/delivery";
+import {
+  isCiudadEsmeraldaBookingIdentifier,
+  isTourComingSoon,
+} from "@/lib/tours-data";
 
 export const runtime = "nodejs";
 
@@ -57,6 +61,33 @@ export async function POST(request: Request) {
         { error: "La solicitud no tiene un formato válido." },
         { status: 400 },
       );
+    }
+    if (draftInput && typeof draftInput === "object") {
+      const submittedTours = ["tourSlug", "tourId", "tourName"].flatMap(
+        (field) => {
+          const value =
+            field in draftInput
+              ? (draftInput as Record<string, unknown>)[field]
+              : null;
+          return typeof value === "string" ? [value] : [];
+        },
+      );
+      if (submittedTours.some((tour) => isTourComingSoon(tour))) {
+        return NextResponse.json(
+          { error: "Este tour estará disponible muy pronto." },
+          { status: 409 },
+        );
+      }
+      if (
+        submittedTours.some(
+          (tour) => !isCiudadEsmeraldaBookingIdentifier(tour),
+        )
+      ) {
+        return NextResponse.json(
+          { error: "El tour indicado no está disponible para reservas." },
+          { status: 400 },
+        );
+      }
     }
     const parsedDraft = bookingDraftSchema.safeParse(draftInput);
     if (!parsedDraft.success) {

@@ -1230,6 +1230,31 @@ button:disabled,
   }
 }
 
+.tour-coming-soon-ribbon::after {
+  animation: tour-ribbon-shine 3.8s ease-in-out infinite;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgb(255 247 214 / 0.42) 48%,
+    transparent 66%
+  );
+  content: "";
+  inset: 0;
+  position: absolute;
+  transform: translateX(-135%);
+}
+
+@keyframes tour-ribbon-shine {
+  0%,
+  38% {
+    transform: translateX(-135%);
+  }
+  72%,
+  100% {
+    transform: translateX(135%);
+  }
+}
+
 @keyframes fog-drift {
   from {
     opacity: 0.1;

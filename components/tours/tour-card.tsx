@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Icon } from "@/components/ui/icon";
 import { formatCrc, formatUsd } from "@/lib/tour-utils";
+import { isTourComingSoon } from "@/lib/tours-data";
 import type { Tour } from "@/types/content";
 
 type TourCardProps = Readonly<{
@@ -11,6 +12,7 @@ type TourCardProps = Readonly<{
 }>;
 
 export function TourCard({ index, tour }: TourCardProps) {
+  const comingSoon = isTourComingSoon(tour);
   const formattedPrice =
     tour.priceUsd !== null
       ? formatUsd(tour.priceUsd)
@@ -27,6 +29,16 @@ export function TourCard({ index, tour }: TourCardProps) {
           src={tour.mainImage}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
+        {comingSoon ? (
+          <div
+            aria-label="Disponible muy pronto"
+            className="tour-coming-soon-ribbon absolute -right-14 top-8 z-10 w-56 rotate-[32deg] overflow-hidden border-y border-[#f4df9a]/35 bg-[linear-gradient(90deg,#6f351f,#b9673f_48%,#6f351f)] px-4 py-2.5 text-center shadow-[0_12px_30px_rgba(0,0,0,0.38)] sm:-right-12 sm:top-10 sm:w-60"
+          >
+            <span className="relative z-10 font-[family-name:var(--font-manrope)] text-[0.56rem] font-extrabold uppercase tracking-[0.14em] text-[#fff4d4] sm:text-[0.6rem]">
+              Disponible muy pronto
+            </span>
+          </div>
+        ) : null}
         <p className="absolute left-5 top-5 rounded-full border border-[#b9ff4a]/25 bg-black/45 px-4 py-2 font-[family-name:var(--font-poppins)] text-[0.55rem] font-semibold uppercase tracking-[0.14em] text-[#d8ff9d] backdrop-blur-md sm:left-7 sm:top-7">
           {tour.category}
         </p>
@@ -94,16 +106,25 @@ export function TourCard({ index, tour }: TourCardProps) {
                 {tour.priceUsd !== null ? formattedPrice : `Desde ${formattedPrice}`}
               </p>
             </div>
-            <Link
-              className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#b9ff4a]/35 bg-[#b9ff4a]/[0.06] px-6 font-[family-name:var(--font-poppins)] text-[0.58rem] font-bold uppercase tracking-[0.16em] text-white transition hover:border-[#b9ff4a] hover:bg-[#b9ff4a] hover:text-black"
-              href={`/tours/${tour.slug}`}
-            >
-              Ver experiencia
-              <Icon
-                className="size-4 transition-transform duration-500 group-hover:translate-x-1"
-                name="arrow"
-              />
-            </Link>
+            {comingSoon ? (
+              <div
+                aria-disabled="true"
+                className="inline-flex min-h-12 cursor-default items-center justify-center rounded-xl border border-[#d4875f]/30 bg-[#9f5130]/10 px-6 text-center font-[family-name:var(--font-poppins)] text-[0.58rem] font-bold uppercase tracking-[0.14em] text-[#e9b99f]"
+              >
+                Disponible muy pronto
+              </div>
+            ) : (
+              <Link
+                className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#b9ff4a]/35 bg-[#b9ff4a]/[0.06] px-6 font-[family-name:var(--font-poppins)] text-[0.58rem] font-bold uppercase tracking-[0.16em] text-white transition hover:border-[#b9ff4a] hover:bg-[#b9ff4a] hover:text-black"
+                href={`/tours/${tour.slug}`}
+              >
+                Ver experiencia
+                <Icon
+                  className="size-4 transition-transform duration-500 group-hover:translate-x-1"
+                  name="arrow"
+                />
+              </Link>
+            )}
           </div>
         </div>
       </div>

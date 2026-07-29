@@ -14,6 +14,7 @@
     "test:booking-contract": "node scripts/verify-booking-contract.mjs",
     "test:customer-booking": "node --no-warnings --experimental-strip-types scripts/test-customer-booking.mjs",
     "test:email-simulation": "node --no-warnings --experimental-strip-types scripts/test-email-notifications.mjs",
+    "test:tour-locks": "node scripts/test-tour-locks.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

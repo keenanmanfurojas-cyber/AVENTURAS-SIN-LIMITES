@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 
 import { bookingRepository } from "@/lib/bookings";
 import { safeBookingErrorMessage } from "@/lib/bookings/errors";
+import {
+  isCiudadEsmeraldaBookingIdentifier,
+  isTourComingSoon,
+} from "@/lib/tours-data";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +24,18 @@ export async function GET(request: Request) {
       });
     }
     if (tourSlug) {
+      if (isTourComingSoon(tourSlug)) {
+        return NextResponse.json(
+          { error: "Este tour estará disponible muy pronto." },
+          { status: 409 },
+        );
+      }
+      if (!isCiudadEsmeraldaBookingIdentifier(tourSlug)) {
+        return NextResponse.json(
+          { error: "Tour no disponible." },
+          { status: 404 },
+        );
+      }
       return NextResponse.json({
         dates: await bookingRepository.getGroupTourDates(tourSlug),
       });

@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { TourDetailPage } from "@/components/tours/tour-detail-page";
 import { siteConfig } from "@/lib/site-config";
-import { getTourBySlug, tours } from "@/lib/tours-data";
+import {
+  getTourBySlug,
+  isTourComingSoon,
+  tours,
+} from "@/lib/tours-data";
 
 type TourPageProps = {
   params: Promise<{
@@ -25,7 +29,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const tour = getTourBySlug(slug);
 
-  if (!tour) {
+  if (!tour || isTourComingSoon(tour)) {
     return {};
   }
 
@@ -43,6 +47,9 @@ export default async function TourPage({ params }: TourPageProps) {
   const { slug } = await params;
   const tour = getTourBySlug(slug);
 
+  if (tour && isTourComingSoon(tour)) {
+    redirect("/explorar#tours");
+  }
   if (!tour || !tour.active) {
     notFound();
   }

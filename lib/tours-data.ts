@@ -405,6 +405,41 @@ export const tours: Tour[] = [
   },
 ];
 
+const comingSoonTourSlugs = new Set([
+  "amanecer-volcan-platanar-sin-transporte",
+  "amanecer-volcan-platanar-transporte-gam",
+  "entre-volcanes-guatemala",
+  "volcan-platanar-sin-transporte",
+  "volcan-platanar-transporte-gam",
+  "tour amanecer en volcán platanar",
+  "tour amanecer en volcán platanar con transporte",
+  "entre volcanes guatemala",
+  "volcán de fuego",
+]);
+
+const ciudadEsmeraldaBookingIdentifiers = new Set([
+  "ciudad-esmeralda",
+  "canon-ciudad-esmeralda-sin-transporte",
+  "canon-ciudad-esmeralda-transporte-gam",
+  "tour ciudad esmeralda",
+  "tour al cañón ciudad esmeralda",
+  "tour grupal al cañón ciudad esmeralda con transporte",
+]);
+
 export function getTourBySlug(slug: string) {
   return tours.find((tour) => tour.slug === slug);
+}
+
+export function isTourComingSoon(
+  tour: Pick<Tour, "slug"> | string,
+) {
+  return comingSoonTourSlugs.has(
+    (typeof tour === "string" ? tour : tour.slug).trim().toLocaleLowerCase("es"),
+  );
+}
+
+export function isCiudadEsmeraldaBookingIdentifier(value: string) {
+  return ciudadEsmeraldaBookingIdentifiers.has(
+    value.trim().toLocaleLowerCase("es"),
+  );
 }
