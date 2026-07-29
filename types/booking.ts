@@ -13,6 +13,7 @@ export type CalendarSyncStatus =
 export type YesNo = "" | "no" | "yes";
 
 export type BookingBuyer = {
+  countryCode: string;
   email: string;
   fullName: string;
   isParticipant: boolean;
@@ -70,6 +71,7 @@ export type BookingDraft = {
   participants: BookingParticipant[];
   selectedDate: string;
   termsAccepted: boolean;
+  transactionalConsent: boolean;
 };
 
 export type PaymentProof = {
@@ -132,7 +134,23 @@ export type BookingRecord = {
   cancellationReason?: string | null;
   pendingHoldUntil?: string | null;
   pricePerPersonCrc: number;
+  transactionalConsent: boolean;
   adminActions?: BookingAdminAction[];
+};
+
+export type PublicBookingStatus = "approved" | "pending_review" | "rejected";
+
+export type PublicBookingRecord = {
+  approvedAt: string | null;
+  bookingCode: string;
+  createdAt: string;
+  mode: BookingMode;
+  paymentStatus: "pending_review" | "rejected" | "verified";
+  quantity: number;
+  selectedDate: string;
+  status: PublicBookingStatus;
+  total: number;
+  tourName: string;
 };
 
 export type Booking = BookingRecord;

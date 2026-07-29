@@ -5,6 +5,7 @@ import type {
   BookingMode,
   BookingParticipant,
 } from "@/types/booking";
+import { emailIsValid, phoneIsValid } from "@/lib/contact-validation";
 
 export const bookingStepLabels = [
   "Modalidad",
@@ -35,6 +36,7 @@ export function createEmptyBookingDraft(): BookingDraft {
     selectedDate: "",
     participantCount: 1,
     buyer: {
+      countryCode: "+506",
       fullName: "",
       email: "",
       phone: "",
@@ -58,6 +60,7 @@ export function createEmptyBookingDraft(): BookingDraft {
       },
     },
     termsAccepted: false,
+    transactionalConsent: false,
   };
 }
 
@@ -150,12 +153,16 @@ export function validateBookingStep(
       if (!participant?.fullName.trim()) {
         errors["participants.0.fullName"] = "Ingresa el nombre completo.";
       }
-      if (!participant?.phone.trim()) {
-        errors["participants.0.phone"] = "Ingresa el número de teléfono.";
+      if (
+        !participant ||
+        !phoneIsValid(participant.phone, draft.buyer.countryCode)
+      ) {
+        errors["participants.0.phone"] =
+          "Ingresa un teléfono válido para el país seleccionado.";
       }
       if (
         !participant ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(participant.email.trim())
+        !emailIsValid(participant.email)
       ) {
         errors["participants.0.email"] =
           "Ingresa un correo electrónico válido.";
@@ -178,11 +185,12 @@ export function validateBookingStep(
       if (!draft.buyer.fullName.trim()) {
         errors["buyer.fullName"] = "Ingresa el nombre completo.";
       }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.buyer.email.trim())) {
+      if (!emailIsValid(draft.buyer.email)) {
         errors["buyer.email"] = "Ingresa un correo electrónico válido.";
       }
-      if (!draft.buyer.phone.trim()) {
-        errors["buyer.phone"] = "Ingresa el teléfono o WhatsApp.";
+      if (!phoneIsValid(draft.buyer.phone, draft.buyer.countryCode)) {
+        errors["buyer.phone"] =
+          "Ingresa un teléfono válido para el país seleccionado.";
       }
     }
   }
@@ -193,8 +201,9 @@ export function validateBookingStep(
       if (!participant.fullName.trim()) {
         errors[`${prefix}.fullName`] = "Ingresa el nombre completo.";
       }
-      if (!participant.phone.trim()) {
-        errors[`${prefix}.phone`] = "Ingresa el número de teléfono.";
+      if (!phoneIsValid(participant.phone)) {
+        errors[`${prefix}.phone`] =
+          "Usa un número internacional válido, por ejemplo +502 5555 5555.";
       }
       if (!participant.hasMedicalCondition) {
         errors[`${prefix}.hasMedicalCondition`] = "Selecciona Sí o No.";
@@ -253,6 +262,10 @@ export function validateBookingStep(
   if (step === 7 && !draft.termsAccepted) {
     errors.termsAccepted =
       "Debes confirmar la información y aceptar los términos.";
+  }
+  if (step === 7 && !draft.transactionalConsent) {
+    errors.transactionalConsent =
+      "Debes autorizar los mensajes relacionados con esta reserva.";
   }
 
   return errors;

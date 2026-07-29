@@ -9,7 +9,11 @@ const adminMigration = await readFile(
   "supabase/migrations/202607270001_admin_profiles_and_rls.sql",
   "utf8",
 );
-const allMigrations = `${migration}\n${adminMigration}`;
+const customerMigration = await readFile(
+  "supabase/migrations/202607280001_customer_booking_experience.sql",
+  "utf8",
+);
+const allMigrations = `${migration}\n${adminMigration}\n${customerMigration}`;
 const repository = await readFile(
   "lib/bookings/supabase-repository.ts",
   "utf8",
@@ -29,9 +33,14 @@ const proofRoute = await readFile(
   "app/api/admin/reservas/[id]/comprobante/route.ts",
   "utf8",
 );
+const publicLookup = await readFile("app/api/mi-reserva/route.ts", "utf8");
+const notificationDelivery = await readFile(
+  "lib/notifications/delivery.ts",
+  "utf8",
+);
 
 const checks = [
-  ["eight domain tables", (allMigrations.match(/create table public\./g) ?? []).length === 8],
+  ["ten domain tables", (allMigrations.match(/create table public\./g) ?? []).length === 10],
   ["booking participants table", /create table public\.booking_participants/.test(migration)],
   ["admin profiles table", /create table public\.admin_profiles/.test(adminMigration)],
   ["booking code unique", /booking_code text not null unique/.test(migration)],
@@ -66,6 +75,14 @@ const checks = [
   ["proof signed URL lasts 60 seconds", /createSignedUrl\(record\.paymentProof\.id, 60\)/.test(proofRoute)],
   ["proof cleanup on failure", /remove\(\[proofPath\]\)/.test(repository)],
   ["booking code retries", /bookingCodeAttempts = 5/.test(repository)],
+  ["public lookup requires code and email", /code.*email/s.test(publicLookup)],
+  ["public lookup rate limited", /LOOKUP_RATE_LIMITED/.test(publicLookup)],
+  ["lookup attempts audited", /booking_lookup_attempts/.test(customerMigration)],
+  ["notification delivery audited", /notification_deliveries/.test(customerMigration)],
+  ["notification idempotency unique", /idempotency_key text not null unique/.test(customerMigration)],
+  ["email failure is isolated", /deliverBookingNotificationSafely/.test(notificationDelivery)],
+  ["contact consent stored", /transactional_message_consent/.test(customerMigration)],
+  ["booking creation v2 transactional", /create_booking_transaction_v2/.test(customerMigration)],
 ];
 
 for (const [name, passed] of checks) {

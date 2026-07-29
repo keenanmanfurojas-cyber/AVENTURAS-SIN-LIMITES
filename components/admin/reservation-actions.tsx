@@ -162,13 +162,17 @@ export function ReservationActions({
 
             {action === "reject" ? (
               <label className="mt-5 block text-sm font-medium text-stone-300">
-                Motivo del rechazo *
+                Motivo permitido para comunicar al cliente *
                 <textarea
                   autoFocus
                   className="admin-control mt-2 min-h-28 w-full resize-y rounded-xl p-4 outline-none focus:border-red-300/50 focus:ring-2 focus:ring-red-300/15"
                   onChange={(event) => setReason(event.target.value)}
                   value={reason}
                 />
+                <span className="mt-2 block text-xs leading-5 text-stone-500">
+                  No incluyas notas internas, datos médicos ni información de
+                  otras reservas.
+                </span>
               </label>
             ) : null}
             <label className="mt-5 block text-sm font-medium text-stone-300">

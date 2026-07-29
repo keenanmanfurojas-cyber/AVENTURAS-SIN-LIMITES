@@ -2,6 +2,9 @@
   "name": "aventuras-sin-limites",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,23 +12,30 @@
     "lint": "eslint .",
     "migrate:demo": "node scripts/migrate-demo-bookings.mjs",
     "test:booking-contract": "node scripts/verify-booking-contract.mjs",
+    "test:customer-booking": "node --no-warnings --experimental-strip-types scripts/test-customer-booking.mjs",
+    "test:email-simulation": "node --no-warnings --experimental-strip-types scripts/test-email-notifications.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@sparticuz/chromium": "149.0.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.8",
     "next": "^15.5.7",
+    "playwright-core": "1.62.0",
+    "qrcode": "^1.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.18.0",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.35.0",
     "eslint-config-next": "^15.5.7",
+    "playwright": "1.62.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.9.2"

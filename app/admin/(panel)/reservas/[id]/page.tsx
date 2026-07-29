@@ -15,6 +15,8 @@ import { requireActiveAdmin } from "@/lib/admin-auth";
 import { getAdminBooking } from "@/lib/admin-bookings";
 import { formatCrc } from "@/lib/tour-utils";
 import { AdminIcon } from "@/components/admin/admin-icon";
+import { BookingCommunicationPanel } from "@/components/admin/booking-communication-panel";
+import { getBookingCommunication } from "@/lib/booking-communications";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Detalle de reserva" };
@@ -41,6 +43,10 @@ export default async function ReservationDetailPage({
           ]
             .filter(Boolean)
             .join(" · ");
+  const communication =
+    record.status === "approved" || record.status === "rejected"
+      ? getBookingCommunication(record)
+      : null;
 
   return (
     <>
@@ -244,6 +250,19 @@ export default async function ReservationDetailPage({
             bookingId={record.id}
             status={record.status}
           />
+          {communication ? (
+            <BookingCommunicationPanel
+              email={record.buyer.email}
+              message={communication.message}
+              phoneIsValid={communication.phoneIsValid}
+              receiptUrl={
+                record.status === "approved"
+                  ? `/api/admin/reservas/${record.id}/recibo`
+                  : undefined
+              }
+              whatsappUrl={communication.whatsappUrl}
+            />
+          ) : null}
           <section className="admin-panel rounded-[1.5rem] p-5 sm:p-6">
             <h2 className="flex items-center gap-3 text-xl font-extrabold text-white">
               <span className="grid size-10 place-items-center rounded-xl bg-emerald-300/10 text-emerald-200"><AdminIcon className="size-5" name="document" /></span> Comprobante

@@ -64,6 +64,8 @@ Tablas:
 - `admin_profiles`
 - `buyers`
 - `admin_actions`
+- `notification_deliveries`
+- `booking_lookup_attempts`
 - `blocked_dates`
 - `calendar_syncs`
 

@@ -15,6 +15,12 @@ import {
   paymentProofIsValid,
 } from "@/lib/bookings/validation";
 import type { BookingRecord } from "@/types/booking";
+import {
+  normalizeEmail,
+  normalizePhoneToE164,
+} from "@/lib/contact-validation";
+import { createBookingLookupToken } from "@/lib/booking-lookup-token";
+import { deliverBookingNotificationSafely } from "@/lib/notifications/delivery";
 
 export const runtime = "nodejs";
 
@@ -60,6 +66,16 @@ export async function POST(request: Request) {
       );
     }
     const draft = parsedDraft.data;
+    const buyerPhone = normalizePhoneToE164(
+      draft.buyer.phone,
+      draft.buyer.countryCode,
+    );
+    if (!buyerPhone) {
+      return NextResponse.json(
+        { error: "El teléfono del comprador no es válido." },
+        { status: 400 },
+      );
+    }
     const mode = config.modes.find((option) => option.id === draft.mode);
     const total = getBookingTotal(config, draft);
     const price = getBookingPricePerPerson(config, draft);
@@ -78,8 +94,20 @@ export async function POST(request: Request) {
       selectedDate: draft.selectedDate,
       mode: mode.id,
       quantity: draft.participantCount,
-      buyer: draft.buyer,
-      participants: draft.participants,
+      buyer: {
+        ...draft.buyer,
+        email: normalizeEmail(draft.buyer.email),
+        phone: buyerPhone,
+      },
+      participants: draft.participants.map((participant, index) => ({
+        ...participant,
+        email: normalizeEmail(participant.email),
+        phone:
+          normalizePhoneToE164(
+            participant.phone,
+            index === 0 ? draft.buyer.countryCode : "+506",
+          ) ?? participant.phone,
+      })),
       transportDetails: draft.modeDetails,
       foodDetails: {
         dietaryDetails: draft.modeDetails.gam_transport.dietaryDetails,
@@ -108,9 +136,18 @@ export async function POST(request: Request) {
       cancelledAt: null,
       pendingHoldUntil,
       pricePerPersonCrc: price,
+      transactionalConsent: draft.transactionalConsent,
     };
+    const reservation = await bookingRepository.create(record, proof);
+    await deliverBookingNotificationSafely(reservation, "booking_received");
     return NextResponse.json(
-      { reservation: await bookingRepository.create(record, proof) },
+      {
+        lookupToken: createBookingLookupToken(
+          reservation.bookingCode,
+          reservation.buyer.email,
+        ),
+        reservation: { bookingCode: reservation.bookingCode },
+      },
       { status: 201 },
     );
   } catch (error) {

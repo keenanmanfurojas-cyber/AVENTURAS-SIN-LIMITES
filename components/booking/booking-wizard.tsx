@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
-import { BookingConfirmation } from "@/components/booking/booking-confirmation";
 import { BookingDateSelector } from "@/components/booking/booking-date-selector";
 import { BookingModeSelector } from "@/components/booking/booking-mode-selector";
 import { BookingProgress } from "@/components/booking/booking-progress";
@@ -25,6 +25,11 @@ import {
   validateBookingStep,
 } from "@/lib/booking-utils";
 import { formatCrc } from "@/lib/tour-utils";
+import {
+  normalizeEmail,
+  normalizePhoneToE164,
+  phoneCountryOptions,
+} from "@/lib/contact-validation";
 import type {
   BookingBuyer,
   BookingConfig,
@@ -32,7 +37,6 @@ import type {
   BookingErrors,
   BookingMode,
   BookingParticipant,
-  BookingRecord,
 } from "@/types/booking";
 
 const receiptTypes = ["image/png", "image/jpeg", "image/webp"];
@@ -129,9 +133,9 @@ export function BookingWizard({
   const [errors, setErrors] = useState<BookingErrors>({});
   const [receipt, setReceipt] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
-  const [record, setRecord] = useState<BookingRecord | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const router = useRouter();
 
   const total = getBookingTotal(config, draft);
   const currentMode = getModeConfig(config, draft.mode);
@@ -177,6 +181,7 @@ export function BookingWizard({
           };
           nextDraft.participants = [soloParticipant];
           nextDraft.buyer = {
+            countryCode: nextDraft.buyer.countryCode,
             email: soloParticipant.email,
             fullName: soloParticipant.fullName,
             isParticipant: true,
@@ -253,6 +258,7 @@ export function BookingWizard({
       updateDraft({
         ...draft,
         buyer: {
+          countryCode: draft.buyer.countryCode,
           email: participant.email,
           fullName: participant.fullName,
           isParticipant: true,
@@ -289,6 +295,7 @@ export function BookingWizard({
       buyer:
         draft.participantCount === 1 && index === 0
           ? {
+              countryCode: draft.buyer.countryCode,
               email: participant.email,
               fullName: participant.fullName,
               isParticipant: true,
@@ -371,17 +378,20 @@ export function BookingWizard({
       const response = await fetch("/api/reservas", { body, method: "POST" });
       const payload = (await response.json()) as {
         error?: string;
-        reservation?: BookingRecord;
+        lookupToken?: string;
+        reservation?: { bookingCode: string };
       };
       if (!response.ok || !payload.reservation) {
         setErrors({ submit: payload.error ?? "No pudimos enviar la solicitud." });
         return;
       }
       window.localStorage.removeItem(config.storageKey);
-      setRecord(payload.reservation);
-      document
-        .querySelector("#booking-wizard")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const params = new URLSearchParams({
+        codigo: payload.reservation.bookingCode,
+        nueva: "1",
+      });
+      if (payload.lookupToken) params.set("acceso", payload.lookupToken);
+      router.push(`/mi-reserva?${params.toString()}`);
     } catch {
       setErrors({
         submit: "No fue posible conectar con el sistema. Intenta de nuevo.",
@@ -472,6 +482,30 @@ export function BookingWizard({
               Esta información también se utilizará como contacto principal de
               la reserva.
             </p>
+            <label className="mt-6 block max-w-md">
+              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-stone-300">
+                País del teléfono
+              </span>
+              <select
+                className="mt-2 min-h-[52px] w-full rounded-2xl border border-white/10 bg-black/25 px-4 text-white"
+                onChange={(event) =>
+                  updateDraft({
+                    ...draft,
+                    buyer: {
+                      ...draft.buyer,
+                      countryCode: event.target.value,
+                    },
+                  })
+                }
+                value={draft.buyer.countryCode}
+              >
+                {phoneCountryOptions.map((option) => (
+                  <option key={option.code} value={option.code}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <div className="mt-7">
               <ParticipantForm
                 errors={errors}
@@ -601,6 +635,23 @@ export function BookingWizard({
           El comprobante será revisado manualmente. Esta solicitud no representa
           una validación automática del pago.
         </p>
+        <dl className="mt-6 grid gap-3 rounded-2xl border border-white/10 bg-black/20 p-5 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-stone-500">Correo de confirmación</dt>
+            <dd className="mt-1 break-all font-semibold text-white">
+              {normalizeEmail(draft.buyer.email) || "Pendiente"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-stone-500">Teléfono final</dt>
+            <dd className="mt-1 font-semibold text-white">
+              {normalizePhoneToE164(
+                draft.buyer.phone,
+                draft.buyer.countryCode,
+              ) ?? "Pendiente"}
+            </dd>
+          </div>
+        </dl>
         <label
           className={`mt-7 flex min-h-[52px] cursor-pointer items-start gap-4 rounded-[1.5rem] border p-5 transition focus-within:ring-2 focus-within:ring-[#b9ff4a]/20 ${
             errors.termsAccepted
@@ -627,6 +678,35 @@ export function BookingWizard({
             {errors.termsAccepted}
           </p>
         ) : null}
+        <label
+          className={`mt-4 flex min-h-[52px] cursor-pointer items-start gap-4 rounded-[1.5rem] border p-5 transition focus-within:ring-2 focus-within:ring-[#b9ff4a]/20 ${
+            errors.transactionalConsent
+              ? "border-red-400/60 bg-red-400/[0.04]"
+              : "border-white/10 bg-white/[0.025]"
+          }`}
+          data-error={Boolean(errors.transactionalConsent)}
+        >
+          <input
+            checked={draft.transactionalConsent}
+            className="mt-1 size-5 shrink-0 accent-[#b9ff4a]"
+            onChange={(event) =>
+              updateDraft({
+                ...draft,
+                transactionalConsent: event.target.checked,
+              })
+            }
+            type="checkbox"
+          />
+          <span className="text-sm font-medium leading-7 text-stone-300">
+            Autorizo mensajes transaccionales por correo o WhatsApp relacionados
+            únicamente con esta reserva.
+          </span>
+        </label>
+        {errors.transactionalConsent ? (
+          <p className="mt-3 text-sm font-medium text-red-400">
+            {errors.transactionalConsent}
+          </p>
+        ) : null}
       </div>
     );
   })();
@@ -637,10 +717,7 @@ export function BookingWizard({
       id="reservar-ciudad-esmeralda"
     >
       <div className="mx-auto max-w-[90rem]" id="booking-wizard">
-        {record ? (
-          <BookingConfirmation config={config} record={record} />
-        ) : (
-          <>
+        <>
             <div className="mx-auto mb-12 max-w-3xl text-center">
               <p className="text-[0.58rem] font-semibold uppercase tracking-[0.26em] text-[#b9ff4a]">
                 Reserva Ciudad Esmeralda
@@ -708,8 +785,7 @@ export function BookingWizard({
                 totalSteps={activeSteps.length}
               />
             </div>
-          </>
-        )}
+        </>
       </div>
     </section>
   );

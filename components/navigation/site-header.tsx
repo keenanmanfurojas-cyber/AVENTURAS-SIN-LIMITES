@@ -145,6 +145,12 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <Link
+              className="hidden min-h-10 items-center rounded-full border border-white/15 px-4 font-[family-name:var(--font-poppins)] text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-white/85 transition hover:border-[#b9ff4a]/40 hover:text-[#c8ff70] lg:inline-flex"
+              href="/mi-reserva"
+            >
+              Mi reserva
+            </Link>
             <a
               className="group hidden min-h-10 items-center gap-2 rounded-full border border-[#b9ff4a]/50 bg-[#b9ff4a] px-5 font-[family-name:var(--font-poppins)] text-[0.6rem] font-bold uppercase tracking-[0.16em] text-black shadow-[0_10px_32px_rgba(185,255,74,0.12)] transition duration-500 hover:-translate-y-0.5 hover:bg-[#cbff7a] active:translate-y-0 sm:inline-flex"
               href={siteConfig.contact.whatsapp.href}
@@ -237,6 +243,13 @@ export function SiteHeader() {
           </nav>
 
           <div className="mt-auto grid gap-3 pt-6 sm:grid-cols-2">
+            <Link
+              className="flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#b9ff4a]/25 bg-[#b9ff4a]/[0.06] px-5 font-[family-name:var(--font-poppins)] text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-[#cbff7a] sm:col-span-2"
+              href="/mi-reserva"
+              onClick={() => closeMenu()}
+            >
+              Consultar mi reserva
+            </Link>
             <a
               className="flex min-h-12 items-center justify-center gap-3 rounded-full bg-[#b9ff4a] px-5 font-[family-name:var(--font-poppins)] text-[0.58rem] font-bold uppercase tracking-[0.2em] text-black shadow-[0_12px_36px_rgba(185,255,74,0.16)] transition-colors hover:bg-[#cbff7a]"
               href={siteConfig.contact.whatsapp.href}

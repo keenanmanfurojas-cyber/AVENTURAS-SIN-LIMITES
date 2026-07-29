@@ -38,6 +38,14 @@ export function SiteFooter() {
               Navegar
             </p>
             <ul className="grid grid-cols-2 gap-x-5 gap-y-3">
+              <li>
+                <Link
+                  className="font-[family-name:var(--font-poppins)] text-sm font-medium leading-6 text-stone-400 transition-colors hover:text-[#b9ff4a]"
+                  href="/mi-reserva"
+                >
+                  Mi reserva
+                </Link>
+              </li>
               {navigationItems.map((item) => (
                 <li key={item.href}>
                   <Link

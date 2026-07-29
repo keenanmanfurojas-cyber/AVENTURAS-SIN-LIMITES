@@ -7,6 +7,7 @@ import {
 } from "@/lib/admin-auth";
 import { getAdminBooking } from "@/lib/admin-bookings";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { deliverBookingNotificationSafely } from "@/lib/notifications/delivery";
 
 const actionSchema = z.discriminatedUnion("action", [
   z.object({
@@ -111,5 +112,16 @@ export async function PATCH(
   }
 
   const record = await getAdminBooking(access.supabase, id);
+  if (
+    record &&
+    (parsed.data.action === "approve" || parsed.data.action === "reject")
+  ) {
+    await deliverBookingNotificationSafely(
+      record,
+      parsed.data.action === "approve"
+        ? "booking_approved"
+        : "booking_rejected",
+    );
+  }
   return NextResponse.json({ record });
 }

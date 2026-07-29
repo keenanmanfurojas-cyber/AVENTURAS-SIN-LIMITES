@@ -29,6 +29,10 @@ Las operaciones privilegiadas quedan exclusivamente en servidor:
 - una nota crea una entrada `note_added` en `admin_actions`;
 - el comprobante usa una URL firmada de 60 segundos en el bucket privado
   `booking-payment-proofs`.
+- las reservas aprobadas o rechazadas muestran un mensaje de WhatsApp generado,
+  copia manual y, cuando corresponde, un recibo imprimible;
+- los intentos de correo se registran de forma idempotente y nunca revierten una
+  transición administrativa.
 
 La service role nunca se incluye en Client Components ni respuestas.
 

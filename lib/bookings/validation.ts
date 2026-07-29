@@ -1,16 +1,21 @@
 import { z } from "zod";
+import {
+  emailIsValid,
+  normalizePhoneToE164,
+  phoneIsValid,
+} from "@/lib/contact-validation";
 
 const yesNoSchema = z.enum(["", "no", "yes"]);
 
 const participantSchema = z
   .object({
-    email: z.string().trim().email().or(z.literal("")),
+    email: z.string().trim().refine((value) => !value || emailIsValid(value)),
     fitness: z.string().trim().min(1).max(1000),
     fullName: z.string().trim().min(2).max(160),
     hasMedicalCondition: z.enum(["no", "yes"]),
     id: z.string().trim().min(1).max(100),
     medicalDetails: z.string().trim().max(2000),
-    phone: z.string().trim().min(7).max(40),
+    phone: z.string().trim().min(7).max(40).refine((value) => phoneIsValid(value)),
   })
   .superRefine((participant, context) => {
     if (
@@ -28,10 +33,11 @@ const participantSchema = z
 export const bookingDraftSchema = z
   .object({
     buyer: z.object({
-      email: z.string().trim().email().max(254),
+      countryCode: z.string().regex(/^\+[1-9]\d{0,3}$/),
+      email: z.string().trim().max(254).refine(emailIsValid),
       fullName: z.string().trim().min(2).max(160),
       isParticipant: z.boolean(),
-      phone: z.string().trim().min(7).max(40),
+      phone: z.string().trim().min(4).max(40),
     }),
     mode: z.enum(["direct", "gam_transport", "private"]),
     modeDetails: z.object({
@@ -54,6 +60,7 @@ export const bookingDraftSchema = z
     participants: z.array(participantSchema).min(1).max(50),
     selectedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     termsAccepted: z.literal(true),
+    transactionalConsent: z.literal(true),
   })
   .superRefine((draft, context) => {
     if (draft.participants.length !== draft.participantCount) {
@@ -61,6 +68,13 @@ export const bookingDraftSchema = z
         code: "custom",
         message: "La cantidad de participantes no coincide.",
         path: ["participants"],
+      });
+    }
+    if (!normalizePhoneToE164(draft.buyer.phone, draft.buyer.countryCode)) {
+      context.addIssue({
+        code: "custom",
+        message: "El teléfono del comprador no es válido.",
+        path: ["buyer", "phone"],
       });
     }
     if (

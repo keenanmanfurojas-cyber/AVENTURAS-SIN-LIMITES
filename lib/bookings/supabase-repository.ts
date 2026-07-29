@@ -22,6 +22,7 @@ import type {
   PrivateAvailabilityStatus,
   YesNo,
 } from "@/types/booking";
+import { inferPhoneCountryCode } from "@/lib/contact-validation";
 
 const paymentProofBucket = "booking-payment-proofs";
 const signedUrlLifetimeSeconds = 60;
@@ -87,6 +88,7 @@ type BookingRow = {
   tour_name: string;
   tour_slug: string;
   transport_details: Record<string, unknown>;
+  transactional_message_consent?: boolean;
   updated_at: string;
 };
 
@@ -141,6 +143,7 @@ export function mapSupabaseBookingRow(value: unknown): BookingRecord {
     approvedAt: row.approved_at,
     bookingCode: row.booking_code,
     buyer: {
+      countryCode: inferPhoneCountryCode(row.buyer.phone),
       email: row.buyer.email,
       fullName: row.buyer.full_name,
       isParticipant: row.quantity === 1,
@@ -174,6 +177,7 @@ export function mapSupabaseBookingRow(value: unknown): BookingRecord {
     },
     pendingHoldUntil: row.pending_hold_until,
     pricePerPersonCrc: row.price_per_person,
+    transactionalConsent: Boolean(row.transactional_message_consent),
     quantity: row.quantity,
     rejectedAt: row.rejected_at,
     rejectionReason: row.rejection_reason,
@@ -254,7 +258,7 @@ export class SupabaseBookingRepository implements BookingRepository {
       for (let attempt = 0; attempt < bookingCodeAttempts; attempt += 1) {
         const bookingCode =
           attempt === 0 ? record.bookingCode : generateReservationCode();
-        const { data, error } = await client.rpc("create_booking_transaction", {
+        const { data, error } = await client.rpc("create_booking_transaction_v2", {
           payload: {
             arrival_details: record.transportDetails.direct,
             booking_code: bookingCode,
@@ -291,6 +295,7 @@ export class SupabaseBookingRepository implements BookingRepository {
                 : record.mode === "private"
                   ? record.transportDetails.private
                   : record.transportDetails.direct,
+            transactional_message_consent: record.transactionalConsent,
           },
         });
 

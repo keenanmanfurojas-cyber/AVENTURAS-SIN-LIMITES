@@ -250,6 +250,132 @@ button:disabled,
   }
 }
 
+/*
+ * Adventure Pass: salida A4 horizontal preparada para la futura capa de PDF.
+ * Estas reglas no alteran la versión responsive de pantalla.
+ */
+@page {
+  size: A4 landscape;
+  margin: 8mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    height: auto;
+    min-height: 0;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .adventure-pass-page {
+    background: #fff !important;
+    display: block;
+    min-height: 0;
+    padding: 0 !important;
+  }
+
+  .adventure-pass-review-copy {
+    display: none !important;
+  }
+
+  .adventure-pass-print {
+    border-radius: 0 !important;
+    break-after: avoid-page;
+    break-before: avoid-page;
+    break-inside: avoid-page;
+    height: 194mm;
+    max-width: none !important;
+    overflow: hidden !important;
+    page-break-after: avoid;
+    page-break-before: avoid;
+    page-break-inside: avoid;
+    width: 281mm;
+    box-shadow: none !important;
+  }
+
+  .adventure-pass-print,
+  .adventure-pass-print * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .adventure-pass-print .pass-microtype {
+    font-size: 9pt !important;
+    line-height: 1.35 !important;
+  }
+
+  .adventure-pass-grid {
+    display: grid !important;
+    grid-template-columns: 1.52fr 0.68fr !important;
+    height: 100%;
+  }
+
+  .adventure-pass-hero,
+  .adventure-pass-hero-inner {
+    min-height: 105mm !important;
+  }
+
+  .adventure-pass-hero-inner {
+    padding: 8mm !important;
+  }
+
+  .adventure-pass-hero .hero-space {
+    height: 36mm !important;
+  }
+
+  .adventure-pass-hero h1 {
+    font-size: 12mm !important;
+    line-height: 0.93 !important;
+  }
+
+  .adventure-pass-body {
+    height: 89mm;
+    overflow: hidden;
+    padding: 6mm 8mm !important;
+  }
+
+  .adventure-pass-body dl > div {
+    padding-bottom: 3.2mm !important;
+    padding-top: 3.2mm !important;
+  }
+
+  .adventure-pass-aside {
+    border-left: 1px dashed rgba(240, 235, 223, 0.5) !important;
+    display: flex !important;
+    height: 194mm;
+  }
+
+  .adventure-pass-aside-body {
+    padding: 7mm !important;
+  }
+
+  .adventure-pass-qr {
+    margin-top: 6mm !important;
+    max-width: 40mm !important;
+    padding: 3mm !important;
+  }
+
+  .adventure-pass-recommendations {
+    margin-top: 6mm !important;
+    padding-top: 5mm !important;
+  }
+
+  .adventure-pass-recommendations ul {
+    margin-top: 3mm !important;
+  }
+
+  .adventure-pass-recommendations li {
+    line-height: 1.35 !important;
+    margin-top: 2.2mm !important;
+  }
+
+  .adventure-pass-footer {
+    padding: 4mm 7mm !important;
+  }
+}
+
 .type-display {
   font-family: var(--font-display);
   font-size: clamp(4rem, 10vw, 9rem);

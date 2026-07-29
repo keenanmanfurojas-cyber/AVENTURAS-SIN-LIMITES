@@ -4,6 +4,10 @@ import {
   bookingLabelClass,
 } from "@/components/booking/booking-ui";
 import type { BookingBuyer, BookingErrors } from "@/types/booking";
+import {
+  normalizePhoneToE164,
+  phoneCountryOptions,
+} from "@/lib/contact-validation";
 
 type BuyerFormProps = Readonly<{
   buyer: BookingBuyer;
@@ -16,6 +20,10 @@ export function BuyerForm({ buyer, errors, onChange }: BuyerFormProps) {
     field: K,
     value: BookingBuyer[K],
   ) => onChange({ ...buyer, [field]: value });
+  const normalizedPhone = normalizePhoneToE164(
+    buyer.phone,
+    buyer.countryCode,
+  );
 
   return (
     <div>
@@ -57,6 +65,20 @@ export function BuyerForm({ buyer, errors, onChange }: BuyerFormProps) {
           ) : null}
         </label>
         <label data-error={Boolean(errors["buyer.phone"])}>
+          <span className={bookingLabelClass}>País *</span>
+          <select
+            className={bookingInputClass}
+            onChange={(event) => update("countryCode", event.target.value)}
+            value={buyer.countryCode}
+          >
+            {phoneCountryOptions.map((option) => (
+              <option key={option.code} value={option.code}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label data-error={Boolean(errors["buyer.phone"])}>
           <span className={bookingLabelClass}>Teléfono / WhatsApp *</span>
           <input
             className={bookingInputClass}
@@ -70,6 +92,12 @@ export function BuyerForm({ buyer, errors, onChange }: BuyerFormProps) {
           ) : null}
         </label>
       </div>
+      <p className="mt-3 text-xs leading-5 text-stone-500">
+        Número final:{" "}
+        <strong className={normalizedPhone ? "text-stone-300" : "text-amber-300"}>
+          {normalizedPhone ?? "Completa un número válido"}
+        </strong>
+      </p>
       <label className="mt-6 flex min-h-[52px] cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-4 transition focus-within:border-[#b9ff4a]/60 focus-within:ring-2 focus-within:ring-[#b9ff4a]/20">
         <input
           checked={buyer.isParticipant}
