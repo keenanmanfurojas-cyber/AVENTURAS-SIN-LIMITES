@@ -48,7 +48,7 @@ export async function POST(request: Request) {
       );
     }
     const booking = await bookingRepository.getBookingByCode(parsed.data.code);
-    if (!booking || booking.status !== "approved") {
+    if (!booking || booking.status !== "approved" || booking.archivedAt) {
       return NextResponse.json(
         { error: "El Adventure Pass todavía no está disponible." },
         { status: 404 },

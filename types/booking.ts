@@ -90,6 +90,8 @@ export type BookingAdminAction = {
   notes: string | null;
   previousStatus: BookingStatus | null;
   reason: string | null;
+  previousValues?: Record<string, unknown> | null;
+  newValues?: Record<string, unknown> | null;
 };
 
 export type AdminAction = {
@@ -109,6 +111,7 @@ export type BookingRecord = {
   tourSlug: string;
   tourName: string;
   selectedDate: string;
+  selectedTime?: string | null;
   mode: BookingMode;
   quantity: number;
   buyer: BookingBuyer;
@@ -123,12 +126,16 @@ export type BookingRecord = {
   sinpeAccountNumber: string;
   sinpeAccountHolder: string;
   paymentProof: PaymentProof;
+  paymentStatus: "pending_review" | "rejected" | "verified";
   status: BookingStatus;
   rejectionReason: string | null;
   adminNotes: string;
   createdAt: string;
   updatedAt: string;
   approvedAt: string | null;
+  archivedAt?: string | null;
+  archivedBy?: string | null;
+  archiveReason?: string | null;
   rejectedAt?: string | null;
   cancelledAt: string | null;
   cancellationReason?: string | null;

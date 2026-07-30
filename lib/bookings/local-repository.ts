@@ -138,6 +138,12 @@ export class LocalBookingRepository implements BookingRepository {
       adminNotes: update.adminNotes?.trim() ?? current.adminNotes,
       approvedAt: update.status === "approved" ? now : current.approvedAt,
       cancelledAt: update.status === "cancelled" ? now : current.cancelledAt,
+      paymentStatus:
+        update.status === "approved"
+          ? "verified"
+          : update.status === "rejected"
+            ? "rejected"
+            : current.paymentStatus,
       rejectionReason:
         update.status === "rejected" || update.status === "cancelled"
           ? update.reason?.trim() || null

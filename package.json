@@ -16,6 +16,8 @@
     "test:email-simulation": "node --no-warnings --experimental-strip-types scripts/test-email-notifications.mjs",
     "test:payment-proof": "node scripts/test-payment-proof.mjs",
     "test:tour-locks": "node scripts/test-tour-locks.mjs",
+    "test:admin-phase-a": "node --no-warnings --experimental-strip-types scripts/test-admin-phase-a.mjs",
+    "test:admin-booking-control": "node scripts/test-admin-booking-control.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

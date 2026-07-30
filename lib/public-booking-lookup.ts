@@ -66,6 +66,21 @@ export async function findPublicBooking(
   });
 
   if (!data || !succeeded) return null;
+
+  const { data: administrativeState, error: administrativeStateError } =
+    await supabase
+      .from("bookings")
+      .select("archived_at")
+      .eq("booking_code", code)
+      .maybeSingle();
+  const migrationIsMissing =
+    administrativeStateError?.code === "42703" ||
+    administrativeStateError?.code === "PGRST204";
+  if (administrativeStateError && !migrationIsMissing) {
+    throw new Error("LOOKUP_FAILED");
+  }
+  if (administrativeState?.archived_at) return null;
+
   return {
     approvedAt: data.approved_at,
     bookingCode: data.booking_code,
