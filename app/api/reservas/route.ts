@@ -176,6 +176,7 @@ export async function POST(request: Request) {
         size: proof.size,
         type: proof.type,
       },
+      paymentStatus: "pending_review",
       status: "pending_review",
       rejectionReason: null,
       adminNotes: "",

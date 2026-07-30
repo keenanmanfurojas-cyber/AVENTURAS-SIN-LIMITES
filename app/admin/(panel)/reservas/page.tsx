@@ -12,13 +12,14 @@ export default async function ReservationsAdminPage({
 }: Readonly<{
   searchParams: Promise<{ fecha?: string | string[] }>;
 }>) {
-  const { supabase } = await requireActiveAdmin();
+  const { profile, supabase } = await requireActiveAdmin();
   const { fecha } = await searchParams;
   const records = await listAdminBookings(supabase);
   return (
     <ReservationsList
       initialDate={typeof fecha === "string" ? fecha : ""}
       initialRecords={records}
+      role={profile.role}
     />
   );
 }

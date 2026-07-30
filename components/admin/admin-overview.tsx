@@ -3,7 +3,9 @@ import Link from "next/link";
 import { AdminIcon, type AdminIconName } from "@/components/admin/admin-icon";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { getAdminDisplayStatus } from "@/lib/admin-booking-ui";
+import { calculateAdminMetrics } from "@/lib/admin-metrics";
 import { BUSINESS_TIMEZONE } from "@/lib/system-config";
+import { formatCrc } from "@/lib/tour-utils";
 import type { BookingRecord, GroupTourDate } from "@/types/booking";
 
 const dateFormatter = new Intl.DateTimeFormat("es-CR", {
@@ -70,7 +72,7 @@ function MetricCard({
   icon: AdminIconName;
   label: string;
   note: string;
-  value: number;
+  value: string;
 }>) {
   return (
     <article className="admin-panel group relative overflow-hidden rounded-[1.4rem] p-5 transition duration-300 hover:-translate-y-1 hover:border-white/[0.16]">
@@ -97,16 +99,12 @@ export function AdminOverview({
   records: BookingRecord[];
   upcomingTourDates: GroupTourDate[];
 }>) {
-  const approved = records.filter((record) => record.status === "approved");
+  const approved = records.filter((record) => record.status === "approved" && !record.archivedAt);
   const pending = records.filter(
-    (record) => getAdminDisplayStatus(record) === "pending_review",
+    (record) => !record.archivedAt && getAdminDisplayStatus(record) === "pending_review",
   );
-  const rejected = records.filter((record) => record.status === "rejected");
+  const dashboardMetrics = calculateAdminMetrics(records);
   const now = Date.now();
-  const confirmedParticipants = approved.reduce(
-    (total, record) => total + safeQuantity(record.quantity),
-    0,
-  );
   const confirmedByDate = approved.reduce<Map<string, number>>((totals, record) => {
     if (!record.selectedDate) return totals;
     totals.set(
@@ -129,39 +127,60 @@ export function AdminOverview({
 
   const metrics = [
     {
+      accent: "border-emerald-300/20 bg-emerald-300/10 text-emerald-200",
+      icon: "spark" as const,
+      label: "Ingresos de hoy",
+      note: "Confirmados hoy · hora de Costa Rica",
+      value: formatCrc(dashboardMetrics.todayRevenue),
+    },
+    {
+      accent: "border-[#b9ff4a]/20 bg-[#b9ff4a]/10 text-[#d0ff87]",
+      icon: "calendar" as const,
+      label: "Ingresos del mes",
+      note: "Pagos confirmados durante el mes",
+      value: formatCrc(dashboardMetrics.monthRevenue),
+    },
+    {
+      accent: "border-teal-300/20 bg-teal-300/10 text-teal-200",
+      icon: "map" as const,
+      label: "Ingresos del año",
+      note: "Pagos confirmados durante el año",
+      value: formatCrc(dashboardMetrics.yearRevenue),
+    },
+    {
       accent: "border-sky-300/20 bg-sky-300/10 text-sky-200",
       icon: "clock" as const,
-      label: "Pendientes de revisión",
-      note: "Solicitudes que requieren atención",
-      value: pending.length,
+      label: "Reservas pendientes",
+      note: "No contabilizadas como ingreso",
+      value: String(dashboardMetrics.pendingBookings),
     },
     {
       accent: "border-[#b9ff4a]/20 bg-[#b9ff4a]/10 text-[#d0ff87]",
       icon: "check" as const,
       label: "Reservas confirmadas",
-      note: "Reservas actualmente aprobadas",
-      value: approved.length,
+      note: "Aprobadas con pago verificado",
+      value: String(dashboardMetrics.confirmedBookings),
     },
     {
       accent: "border-red-300/20 bg-red-300/10 text-red-200",
       icon: "close" as const,
-      label: "Reservas rechazadas",
-      note: "Solicitudes cerradas",
-      value: rejected.length,
+      label: "Reservas canceladas",
+      note: "No contabilizadas como ingreso",
+      value: String(dashboardMetrics.cancelledBookings),
     },
     {
       accent: "border-violet-300/20 bg-violet-300/10 text-violet-200",
-      icon: "calendar" as const,
-      label: "Próximas salidas",
-      note: "Fechas activas en Supabase",
-      value: upcomingTourDates.length,
+      icon: "document" as const,
+      label: "Ticket promedio",
+      note: "Ingreso confirmado por reserva",
+      value: formatCrc(dashboardMetrics.averageTicket),
     },
     {
       accent: "border-amber-300/20 bg-amber-300/10 text-amber-200",
       icon: "users" as const,
       label: "Participantes confirmados",
-      note: "Personas en reservas aprobadas",
-      value: confirmedParticipants,
+      note: "Personas con pago verificado",
+      value: String(dashboardMetrics.confirmedParticipants),
     },
   ];
 
@@ -213,7 +232,7 @@ export function AdminOverview({
           </div>
           <span className="hidden text-xs text-stone-500 sm:block">Datos en tiempo real</span>
         </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {metrics.map((metric) => <MetricCard {...metric} key={metric.label} />)}
         </div>
       </section>

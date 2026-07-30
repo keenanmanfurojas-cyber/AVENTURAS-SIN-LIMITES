@@ -55,12 +55,17 @@ type AdminActionRow = {
   notes: string | null;
   previous_status: BookingStatus | null;
   reason: string | null;
+  previous_values?: Record<string, unknown> | null;
+  new_values?: Record<string, unknown> | null;
 };
 
 type BookingRow = {
   admin_actions?: AdminActionRow[];
   admin_notes: string;
   approved_at: string | null;
+  archived_at?: string | null;
+  archived_by?: string | null;
+  archive_reason?: string | null;
   booking_code: string;
   booking_mode: BookingMode;
   buyer: BuyerRow;
@@ -74,12 +79,14 @@ type BookingRow = {
   id: string;
   participants: ParticipantRow[];
   payment_proof_path: string;
+  payment_status: "pending_review" | "rejected" | "verified";
   pending_hold_until: string | null;
   price_per_person: number;
   quantity: number;
   rejected_at: string | null;
   rejection_reason: string | null;
   selected_date: string;
+  selected_time: string | null;
   sinpe_account_holder: string;
   sinpe_account_number: string;
   status: BookingStatus;
@@ -126,6 +133,8 @@ function mapAdminAction(row: AdminActionRow): BookingAdminAction {
     notes: row.notes,
     previousStatus: row.previous_status,
     reason: row.reason,
+    previousValues: row.previous_values,
+    newValues: row.new_values,
   };
 }
 
@@ -141,6 +150,9 @@ export function mapSupabaseBookingRow(value: unknown): BookingRecord {
     adminActions: (row.admin_actions ?? []).map(mapAdminAction),
     adminNotes: row.admin_notes,
     approvedAt: row.approved_at,
+    archivedAt: row.archived_at,
+    archivedBy: row.archived_by,
+    archiveReason: row.archive_reason,
     bookingCode: row.booking_code,
     buyer: {
       countryCode: inferPhoneCountryCode(row.buyer.phone),
@@ -175,6 +187,7 @@ export function mapSupabaseBookingRow(value: unknown): BookingRecord {
       size: 0,
       type: "application/octet-stream",
     },
+    paymentStatus: row.payment_status,
     pendingHoldUntil: row.pending_hold_until,
     pricePerPersonCrc: row.price_per_person,
     transactionalConsent: Boolean(row.transactional_message_consent),
@@ -182,6 +195,7 @@ export function mapSupabaseBookingRow(value: unknown): BookingRecord {
     rejectedAt: row.rejected_at,
     rejectionReason: row.rejection_reason,
     selectedDate: row.selected_date,
+    selectedTime: row.selected_time,
     sinpeAccountHolder: row.sinpe_account_holder,
     sinpeAccountNumber: row.sinpe_account_number,
     status: row.status,

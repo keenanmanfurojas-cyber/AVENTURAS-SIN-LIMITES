@@ -107,6 +107,16 @@ export async function getAdminBooking(
   return data ? mapSupabaseBookingRow(data) : null;
 }
 
+export async function hasAdministrativeBookingControl(
+  supabase: SupabaseClient,
+): Promise<boolean> {
+  const { error } = await supabase
+    .from("bookings")
+    .select("archived_at")
+    .limit(0);
+  return !error;
+}
+
 export async function listUpcomingTourDates(
   supabase: SupabaseClient,
   today: string,

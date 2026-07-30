@@ -1,4 +1,5 @@
 import { BUSINESS_TIMEZONE } from "@/lib/system-config";
+import { getBookingModeLabel } from "@/lib/booking-mode-label";
 import type { BookingMode, BookingRecord, BookingStatus } from "@/types/booking";
 
 export type AdminDisplayStatus = BookingStatus | "expired";
@@ -46,7 +47,5 @@ export function formatAdminTimestamp(value?: string | null) {
 }
 
 export function adminModeLabel(mode: BookingMode) {
-  if (mode === "gam_transport") return "Transporte desde la GAM";
-  if (mode === "private") return "Tour privado";
-  return "Llegada directa";
+  return getBookingModeLabel(mode);
 }

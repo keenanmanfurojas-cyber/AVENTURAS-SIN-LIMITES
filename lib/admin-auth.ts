@@ -9,7 +9,7 @@ export type AdminProfile = {
   fullName: string;
   id: string;
   isActive: boolean;
-  role: "admin";
+  role: "admin" | "superadmin";
 };
 
 export type AdminAccess = {
@@ -33,12 +33,12 @@ export async function getAdminAccess(): Promise<AdminAccess> {
     .maybeSingle();
 
   const profile =
-    data?.role === "admin" && data.is_active
+    (data?.role === "admin" || data?.role === "superadmin") && data.is_active
       ? {
           fullName: data.full_name,
           id: data.id,
           isActive: true,
-          role: "admin" as const,
+          role: data.role,
         }
       : null;
 

@@ -19,11 +19,14 @@ import { AdminIcon } from "@/components/admin/admin-icon";
 const filterClass =
   "admin-control min-h-[52px] w-full rounded-xl px-4 text-sm outline-none";
 
+type ReservationFilter = AdminDisplayStatus | "inactive" | "";
+
 export function ReservationsList({
   initialDate = "",
   initialRecords,
-}: Readonly<{ initialDate?: string; initialRecords: BookingRecord[] }>) {
-  const [status, setStatus] = useState<AdminDisplayStatus | "">("");
+  role,
+}: Readonly<{ initialDate?: string; initialRecords: BookingRecord[]; role: "admin" | "superadmin" }>) {
+  const [status, setStatus] = useState<ReservationFilter>("");
   const [date, setDate] = useState(initialDate);
   const [search, setSearch] = useState("");
 
@@ -32,7 +35,7 @@ export function ReservationsList({
     return initialRecords.filter((record) => {
       const displayStatus = getAdminDisplayStatus(record);
       return (
-        (!status || displayStatus === status) &&
+        ((!status && !record.archivedAt) || (status === "inactive" ? Boolean(record.archivedAt) : (!record.archivedAt && displayStatus === status))) &&
         (!date || record.selectedDate === date) &&
         (!query ||
           [record.bookingCode, record.buyer.fullName]
@@ -59,7 +62,7 @@ export function ReservationsList({
         </div>
         <div className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-sm text-stone-400">
           <AdminIcon className="size-5 text-[#b9ff4a]" name="document" />
-          <span><strong className="text-white">{initialRecords.length}</strong> totales</span>
+          <span><strong className="text-white">{initialRecords.filter((record) => !record.archivedAt).length}</strong> activas</span>
         </div>
       </div>
 
@@ -86,11 +89,12 @@ export function ReservationsList({
             <select
             className={`${filterClass} pr-10`}
             onChange={(event) =>
-              setStatus(event.target.value as AdminDisplayStatus | "")
+              setStatus(event.target.value as ReservationFilter)
             }
             value={status}
           >
             <option value="">Todos los estados</option>
+            <option value="inactive">Inactivas</option>
             {(
               [
                 "pending_review",
@@ -149,6 +153,7 @@ export function ReservationsList({
                         {record.bookingCode}
                       </h2>
                       <AdminStatusBadge status={displayStatus} />
+                      {record.archivedAt ? <span className="rounded-full border border-stone-400/30 px-3 py-1 text-xs font-bold text-stone-300">Inactiva</span> : null}
                     </div>
                     <dl className="mt-6 grid gap-x-5 gap-y-4 border-t border-white/[0.07] pt-5 text-sm sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                       <div>
@@ -203,12 +208,23 @@ export function ReservationsList({
                       </div>
                     </dl>
                   </div>
-                  <Link
-                    className="inline-flex min-h-[52px] w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-[#b9ff4a]/25 bg-[#b9ff4a]/[0.05] px-6 text-xs font-extrabold uppercase tracking-[0.1em] text-[#d0ff87] outline-none transition hover:border-[#b9ff4a]/50 hover:bg-[#b9ff4a]/10 focus-visible:ring-2 focus-visible:ring-[#b9ff4a]/35 sm:w-auto"
-                    href={`/admin/reservas/${record.id}`}
-                  >
-                    Ver detalle <AdminIcon className="size-4" name="arrow" />
-                  </Link>
+                  <details className="relative w-full shrink-0 sm:w-auto">
+                    <summary className="inline-flex min-h-[52px] w-full cursor-pointer list-none items-center justify-center gap-2 rounded-xl border border-[#b9ff4a]/25 bg-[#b9ff4a]/[0.05] px-6 text-xs font-extrabold uppercase tracking-[0.1em] text-[#d0ff87] sm:w-auto">
+                      Acciones <AdminIcon className="size-4 rotate-90" name="arrow" />
+                    </summary>
+                    <div className="mt-2 grid min-w-56 gap-1 rounded-xl border border-white/10 bg-[#0c110d] p-2 text-sm text-stone-200 sm:absolute sm:right-0 sm:z-10">
+                      <Link className="rounded-lg px-3 py-2 hover:bg-white/5" href={`/admin/reservas/${record.id}`}>Ver detalles</Link>
+                      <Link className="rounded-lg px-3 py-2 hover:bg-white/5" href={`/admin/reservas/${record.id}#acciones`}>Editar</Link>
+                      {!record.archivedAt ? <>
+                        <Link className="rounded-lg px-3 py-2 hover:bg-white/5" href={`/admin/reservas/${record.id}#acciones`}>Reprogramar</Link>
+                        <Link className="rounded-lg px-3 py-2 hover:bg-white/5" href={`/admin/reservas/${record.id}#acciones`}>Cambiar estado</Link>
+                        <Link className="rounded-lg px-3 py-2 text-red-200 hover:bg-red-300/5" href={`/admin/reservas/${record.id}#acciones`}>Inactivar</Link>
+                      </> : <>
+                        <Link className="rounded-lg px-3 py-2 hover:bg-white/5" href={`/admin/reservas/${record.id}#acciones`}>Activar</Link>
+                        {role === "superadmin" ? <Link className="rounded-lg px-3 py-2 text-red-200 hover:bg-red-300/5" href={`/admin/reservas/${record.id}#acciones`}>Eliminar definitivamente</Link> : null}
+                      </>}
+                    </div>
+                  </details>
                 </div>
               </article>
             );

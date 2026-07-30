@@ -12,20 +12,44 @@ import {
   getAdminDisplayStatus,
 } from "@/lib/admin-booking-ui";
 import { requireActiveAdmin } from "@/lib/admin-auth";
-import { getAdminBooking } from "@/lib/admin-bookings";
+import {
+  getAdminBooking,
+  hasAdministrativeBookingControl,
+} from "@/lib/admin-bookings";
 import { formatCrc } from "@/lib/tour-utils";
 import { AdminIcon } from "@/components/admin/admin-icon";
 import { BookingCommunicationPanel } from "@/components/admin/booking-communication-panel";
 import { getBookingCommunication } from "@/lib/booking-communications";
+import type { BookingAdminAction } from "@/types/booking";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Detalle de reserva" };
 
+function auditMessage(action: BookingAdminAction, bookingCode: string, actorName: string) {
+  const actor = action.actorId ? actorName : "El sistema";
+  if (action.action === "inactivated") return `${actor} inactivó la reserva ${bookingCode}.${action.reason ? ` Motivo: ${action.reason}.` : ""}`;
+  if (action.action === "activated") return `${actor} activó la reserva ${bookingCode}.${action.reason ? ` Motivo: ${action.reason}.` : ""}`;
+  if (action.action === "edited") return `${actor} editó los datos de la reserva ${bookingCode}.`;
+  if (action.action === "rescheduled") {
+    const before = String(action.previousValues?.selected_date ?? "");
+    const after = String(action.newValues?.selected_date ?? "");
+    return before && after
+      ? `${actor} cambió la fecha del ${formatBookingDate(before)} al ${formatBookingDate(after)}.`
+      : `${actor} reprogramó la reserva ${bookingCode}.`;
+  }
+  if (action.action === "note_added") return `${actor} agregó una nota administrativa.`;
+  if (action.action === "submitted") return "El sistema recibió la solicitud.";
+  return `${actor} cambió el estado a ${adminStatusLabels[action.newStatus]}.`;
+}
+
 export default async function ReservationDetailPage({
   params,
 }: Readonly<{ params: Promise<{ id: string }> }>) {
-  const { supabase } = await requireActiveAdmin();
-  const record = await getAdminBooking(supabase, (await params).id);
+  const { profile, supabase } = await requireActiveAdmin();
+  const [record, administrativeControlAvailable] = await Promise.all([
+    getAdminBooking(supabase, (await params).id),
+    hasAdministrativeBookingControl(supabase),
+  ]);
   if (!record) notFound();
 
   const displayStatus = getAdminDisplayStatus(record);
@@ -208,17 +232,13 @@ export default async function ReservationDetailPage({
                   >
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <strong className="text-sm text-white">
-                        {action.action === "submitted"
-                          ? "Solicitud recibida"
-                          : action.action === "note_added"
-                            ? "Nota administrativa"
-                            : adminStatusLabels[action.newStatus]}
+                        {auditMessage(action, record.bookingCode, profile.fullName)}
                       </strong>
                       <time className="text-xs text-stone-500">
                         {formatAdminTimestamp(action.createdAt)}
                       </time>
                     </div>
-                    {action.reason ? (
+                    {action.reason && !["inactivated", "activated"].includes(action.action) ? (
                       <p className="mt-2 text-sm text-stone-300">
                         Motivo: {action.reason}
                       </p>
@@ -246,9 +266,9 @@ export default async function ReservationDetailPage({
 
         <aside className="space-y-5 xl:sticky xl:top-5 xl:self-start">
           <ReservationActions
-            bookingCode={record.bookingCode}
-            bookingId={record.id}
-            status={record.status}
+            administrativeControlAvailable={administrativeControlAvailable}
+            record={record}
+            role={profile.role}
           />
           {communication ? (
             <BookingCommunicationPanel
